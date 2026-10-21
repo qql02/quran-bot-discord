@@ -1,0 +1,14 @@
+node_modules/
+.env
+*.log
+.DS_Store
+# Log files
+logs/
+.npm/
+*.tar.gz
+quran-bot-patched/
+src/**/*.bak
+
+# Downloaded Mushaf page images (re-created automatically at start-up)
+assets/quran-images/
+.env.secondary

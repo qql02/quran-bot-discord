@@ -1,0 +1,56 @@
+{
+  "name": "quran-discord-bot",
+  "version": "2.4.2",
+  "description": "Quran Discord bot — HOST edition (ffmpeg optional, pure JS/WASM MP3 decoding built in; ready for panel hosts such as bot-hosting.net)",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "deploy": "node src/deploy-commands.js",
+    "deploy:mother": "node src/deploy-commands.js --mother",
+    "deploy:check": "node src/deploy-commands.js --check",
+    "deploy:global": "node src/deploy-commands.js --global",
+    "lint": "eslint .",
+    "test": "node --import ./test-helpers/register.mjs --test \"test/**/*.test.js\"",
+    "clear-dms": "node src/tools/clear-dms.js",
+    "fix-locks": "node src/tools/fix-setup-locks.js",
+    "add-bot": "node src/tools/add-bot.js"
+  },
+  "dependencies": {
+    "@discordjs/voice": "^0.19.2",
+    "@resvg/resvg-js": "^2.6.2",
+    "axios": "^1.7.2",
+    "connect-mongo": "^5.1.0",
+    "cors": "^2.8.5",
+    "discord.js": "^14.27.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "mongoose": "^8.24.5",
+    "mpg123-decoder": "^1.0.3",
+    "opusscript": "^0.1.1",
+    "tweetnacl": "^1.0.3",
+    "undici": "^6.29.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.7.0",
+    "globals": "^17.13.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "quran",
+    "islam",
+    "voice",
+    "dashboard"
+  ],
+  "license": "MIT",
+  "optionalDependencies": {
+    "ffmpeg-static": "^5.3.0"
+  }
+}

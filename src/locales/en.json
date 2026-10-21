@@ -1,0 +1,118 @@
+{
+  "commands": {
+    "play": {
+      "now_playing": "▶ Now Playing"
+    },
+    "pause": {
+      "not_playing": "Nothing is currently playing."
+    },
+    "language": {
+      "changed": "✅ Language changed to **English**.",
+      "changed_title": "Language Changed"
+    },
+    "stats": {
+      "title": "📊 Server Statistics",
+      "field_surahs": "📖 Surahs Played",
+      "field_playtime": "⏱ Total Play Time",
+      "field_sessions": "🎙️ Total Sessions",
+      "field_top_reciter": "🏆 Most Played",
+      "no_stats": "No statistics recorded yet. Start playing to generate stats!",
+      "time_format": "{{hours}}h {{minutes}}m"
+    },
+    "help": {
+      "title": "📖 Quran Bot — Help"
+    },
+    "invite": {
+      "title": "➕ Add the bot to your server",
+      "body": "Bring the Holy Quran to your community: recitations by hundreds of reciters, live radio, full-Quran mode and an easy control panel.",
+      "features": "🎙️ Hundreds of reciters\n📻 Live Quran radio\n🎛️ Control panel with buttons\n🌐 Arabic & English",
+      "click": "Click here",
+      "cta": "add the bot to your server"
+    },
+    "secondbot": {
+      "title": "🎧 Second bot (voice helper) — optional",
+      "intro": "An extra bot that recites in a second voice room when the first one is busy. It has no commands of its own: you keep using this bot's commands, and a member's request is handed to it automatically.",
+      "steps_title": "Steps",
+      "step1": "Press **➕ Add the second bot** below (you need the **Manage Server** permission).",
+      "step2": "Pick **this server** on the Discord page and approve the permissions.",
+      "step3": "Come back here and press **🔄 Check** so we can confirm it joined.",
+      "step4": "Make sure it can see the voice rooms you want (**View Channel + Connect + Speak**).",
+      "bot_line": "Bot: {{bot}}",
+      "not_joined": "⏳ It has not joined this server yet. Finish the steps above, then press **🔄 Check** again.",
+      "ok_title": "✅ The second bot is ready",
+      "ok_body": "{{bot}} is in this server and online. When the first bot is busy in another room, a member's `/recite` or `/live` is handed to it: it joins **their** room and posts its own control panel.",
+      "gaps_title": "⚠️ The second bot joined, but needs permissions",
+      "gaps_body": "{{bot}} is in the server but is missing: **{{gaps}}**. Give it a role with these permissions (Server Settings → Roles), or allow them in the voice rooms, then press **🔄 Check**.",
+      "offline_title": "🟠 The second bot is in the server but offline",
+      "offline_body": "{{bot}} joined, but it is not running right now (the bot's owner needs to start it). Nothing is wrong on your side.",
+      "none_title": "The second bot is not set up",
+      "none_body": "This bot has no voice helper configured, so there is nothing to add. The bot's owner can set one up with `npm run add-bot`.",
+      "btn_open": "🎧 Second bot",
+      "btn_add": "Add the second bot",
+      "btn_check": "🔄 Check",
+      "checking": "🔎 Checking…",
+      "footer": "Optional — the bot works fully without it"
+    }
+  },
+  "errors": {
+    "not_in_voice": "❌ You must be in a voice channel to use this command.",
+    "not_same_voice": "❌ You must be in the same voice channel as the bot to control playback.",
+    "no_permission_connect": "❌ I can't join your voice channel. Give me the **Connect** permission there (channel settings → Permissions).",
+    "no_permission_speak": "❌ I can join but I'm not allowed to talk. Give me the **Speak** permission in your voice channel.",
+    "connection_failed": "❌ Failed to connect to the voice channel. Please try again.",
+    "busy": "⏳ The bot is serving the maximum number of servers right now. Please try again shortly.",
+    "no_permission_view": "❌ I can't see your voice channel. Give me the **View Channel** permission there.",
+    "voice_full": "❌ Your voice channel is full ({{limit}} users). Raise its user limit, or give me the **Move Members** permission so I can join anyway.",
+    "stage_unsupported": "❌ Stage channels aren't supported. Join a regular voice channel and try again.",
+    "bot_missing_permissions": "❌ I'm missing a permission in this channel (usually **Send Messages**, **Embed Links** or **Use External Emojis**). Check my role's permissions and try again.",
+    "bot_no_access": "❌ I can't access this channel. Give me the **View Channel** permission here and try again.",
+    "unexpected": "⚠️ Unexpected error. Please try again. If it keeps happening, send this code to the bot owner: `{{code}}`",
+    "busy_sibling_here": "✅ {{bot}} is already reciting in the voice room you are in. Use it to control or change the recitation.",
+    "busy_all_busy": "⏳ Every bot is busy right now (this one and {{bots}}), each in a different room. Join one of their rooms or wait until one finishes.",
+    "busy_use_other": "⏳ This bot is already reciting in another voice channel. Use {{bot}} to start another recitation in this server.",
+    "worker_busy": "⏳ {{bot}} is already reciting in another voice room of this server, and this bot is busy too. Join one of their rooms or wait until one finishes.",
+    "worker_start_failed": "❌ {{bot}} joined {{channel}} but could not start that recitation. Pick it again from its control panel.",
+    "worker_timeout": "⏳ {{bot}} did not answer in time (it may be offline or restarting). Please try again in a moment.",
+    "worker_pending": "⏳ {{bot}} is already being called to this server. Please wait a few seconds.",
+    "other_bot_in_voice": "⛔ Playback is not possible because another bot is in {{channel}} ({{bots}}). Please remove the bot from the voice channel and try again.",
+    "join_in_progress": "⏳ The bot is joining a voice channel in this server right now. Please try again in a few seconds.",
+    "fetch_failed": "❌ Could not fetch Quran data. Please try again later.",
+    "command_error": "❌ An error occurred while executing this command.",
+    "mongo_error": "❌ Database error. Please try again.",
+    "stream_error": "❌ Audio stream error. Skipping to next track.",
+    "unknown": "❌ An unknown error occurred.",
+    "queue_full": "The queue is full (max {{max}}).",
+    "station_need_manage": "❌ You need the **Manage Server** permission to add or remove this server's stations.",
+    "station_need_owner": "❌ Only the bot owner can manage public stations.",
+    "station_name_invalid": "❌ The station name must be between 2 and 60 characters.",
+    "station_url_invalid": "❌ That isn't a valid link. Use a direct stream link starting with `http://` or `https://`.",
+    "station_unsafe": "❌ That link points to a private or blocked address, so it can't be used.",
+    "station_unreachable": "❌ I couldn't reach that stream. Check the link works and try again.",
+    "station_not_audio": "❌ That link is a web page, not an audio stream. Use the direct stream link.",
+    "station_exists": "❌ This station was already added.",
+    "station_limit_guild": "❌ This server reached the limit of {{max}} stations. Remove one first.",
+    "station_limit_global": "❌ Public stations reached the limit of {{max}}. Remove one first.",
+    "station_not_found": "❌ Station not found. It may have been deleted already.",
+    "pull_no_session": "❌ No bot is reciting in this server, so there is nothing to pull. Start one with `/start` or `/recite`.",
+    "pull_already_here": "✅ {{bot}} is already in your voice room — no need to pull.",
+    "pull_ambiguous": "❓ More than one recitation is running in this server: {{channels}}\nRun `/pull` again and pick the room you were listening in with the **from** option.",
+    "pull_no_bot_there": "❌ No bot is reciting in {{channel}}.",
+    "pull_no_free_bot": "⏳ There are still people in {{channel}} listening to {{bot}}, and no other bot in this server is free to come to you. Wait until a bot is free, or rejoin them.",
+    "pull_resume_failed": "❌ I could not continue the recitation in {{channel}}. If you keep seeing this, check the bot's permissions in that room and try again.",
+    "pull_not_allowed": "⛔ You cannot pull the recitation from {{channel}} because you were not just in it. You must have just left that room, or ask a moderator.",
+    "worker_still_joining": "⏳ {{bot}} accepted the request and is still joining {{channel}} — give it a few more seconds before trying again.",
+    "pull_someone_joined": "⏳ Someone just joined {{channel}}, so the bot stays there with them. Use `/pull` again to bring a copy to you if a second bot is free.",
+    "pull_too_fast": "⏳ A pull is running or just finished. Wait a few seconds and try again."
+  },
+  "misc": {
+    "left_idle": "👋 I left the voice channel due to inactivity.\nType `/start` to bring me back anytime.",
+    "radio_lost": "📻 The radio stream was interrupted and I couldn't reconnect, so I stopped.\nUse `/radio` to start it again anytime.",
+    "left_sleep": "😴 Sleep timer finished — playback stopped. Good night 🌙\nType `/start` to start again anytime.",
+    "worker_joined": "✅ This bot is busy in another room, so {{bot}} joined {{channel}} and will recite there. Use the control panel it posted.",
+    "worker_joined_nopanel": "✅ {{bot}} joined {{channel}}, but it may not write in that room or in this channel, so it could not post its control panel. Give it **View Channel** and **Send Messages**.",
+    "pull_moved": "✅ {{bot}} moved to {{channel}} and carries on from where you were.",
+    "pull_cloned": "✅ {{bot}} joined {{channel}} and continues for you from the same point; {{from}} stays in {{old}} with the people who remained.",
+    "pull_where": "📍 {{what}} — from {{time}}",
+    "pull_where_live": "📍 {{what}}"
+  }
+}

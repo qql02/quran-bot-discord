@@ -1,0 +1,1827 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<script src="/config.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة الإدارة — بوت القرآن</title>
+<link rel="icon" type="image/png" href="/assets/logo.png">
+<link rel="apple-touch-icon" href="/assets/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<script src="/admin/vendor/chart.umd.js"></script>
+<style>
+:root {
+  color-scheme: dark;
+  --bg:      #0b0b0c;
+  --bg2:     #101011;
+  --bg3:     #171718;
+  --card:    #131314;
+  --card2:   #19191a;
+  --border:  rgba(255,255,255,0.09);
+  --border2: rgba(255,255,255,0.19);
+  --accent:  #c9c9cd;
+  --matte:   #1d1d1f;      /* matte black fill (buttons, brand mark) */
+  --accent2: #dcdcdf;
+  --accent3: #f2f2f3;
+  --gold:    #c9a24b;
+  --gold2:   #dcbc6a;
+  --red:     #e0675c;
+  --green:   #d3d3d6;
+  --teal:    #b4b4b9;
+  --orange:  #d9894a;
+  --purple:  #a58bc2;
+  --text:    #ececee;
+  --muted:   #a2a2a8;
+  --muted2:  #8a8a90;
+  --discord: #5865f2;
+  --danger:  rgba(224,103,92,0.1);
+  --r:       6px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex; overflow: hidden;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 230px; flex-shrink: 0;
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: fixed; right: 0; top: 0; bottom: 0;
+  z-index: 50; overflow-y: auto;
+}
+.sidebar-brand {
+  display: flex; align-items: center; gap: 0.7rem;
+  padding: 1.4rem 1.3rem 1.2rem;
+  border-bottom: 1px solid var(--border);
+}
+.brand-icon {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: var(--matte);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.brand-name { font-size: 0.9rem; font-weight: 700; color: var(--accent3); }
+.brand-badge {
+  font-size: 0.7rem;
+  background: rgba(224,103,92,0.12);
+  color: var(--red);
+  border: 1px solid rgba(224,103,92,0.25);
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  margin-right: auto;
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.05em;
+}
+nav.sidebar-nav {
+  flex: 1; padding: 0.8rem 0;
+  display: flex; flex-direction: column; gap: 0.15rem;
+}
+.nav-section {
+  font-size: 0.7rem; font-weight: 700; color: var(--muted2);
+  padding: 0.5rem 1.3rem 0.25rem;
+  letter-spacing: 0.08em; font-family: 'IBM Plex Mono', monospace;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 0.7rem;
+  padding: 0.62rem 1.3rem;
+  font-size: 0.87rem; color: var(--muted);
+  cursor: pointer; text-decoration: none;
+  transition: color 0.2s, background 0.2s;
+  border-right: 3px solid transparent;
+  user-select: none;
+}
+.nav-item:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.nav-item.active {
+  color: var(--accent3);
+  background: rgba(255,255,255,0.1);
+  border-right-color: var(--accent);
+}
+.nav-item .ni { font-size: 1rem; width: 18px; text-align: center; }
+.nav-badge {
+  margin-right: auto;
+  background: rgba(224,103,92,0.15);
+  color: var(--red);
+  font-size: 0.7rem; font-family: 'IBM Plex Mono', monospace;
+  border-radius: 4px; padding: 0.1rem 0.5rem;
+  border: 1px solid rgba(224,103,92,0.2);
+}
+.nav-badge.green {
+  background: rgba(235,235,238,0.12);
+  color: var(--green);
+  border-color: rgba(235,235,238,0.2);
+}
+
+.sidebar-footer {
+  padding: 1rem 1.2rem;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.sidebar-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 2px solid var(--accent);
+  object-fit: cover; flex-shrink: 0;
+}
+.sidebar-username { font-size: 0.82rem; font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.logout-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 0.9rem;
+  transition: color 0.2s; padding: 0.2rem;
+}
+.logout-btn:hover { color: var(--red); }
+
+/* ── Main ── */
+.main {
+  flex: 1; margin-right: 230px;
+  overflow-y: auto; height: 100vh;
+  position: relative; z-index: 1;
+}
+.main-inner { padding: 1.8rem 2rem 3rem; min-height: 100%; }
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.8rem; flex-wrap: wrap; gap: 0.7rem;
+}
+.page-title { font-size: 1.4rem; font-weight: 700; color: var(--text); }
+.page-title em { color: var(--accent2); font-style: normal; }
+
+/* ── Stats ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+  gap: 0.9rem; margin-bottom: 1.8rem;
+}
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.1rem 1rem;
+  position: relative; overflow: hidden;
+  transition: border-color 0.2s, transform 0.2s;
+  cursor: default;
+}
+.stat-card:hover { border-color: var(--border2); }
+.stat-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 0.6rem;
+  font-size: 0.75rem; color: var(--muted);
+  font-weight: 600; letter-spacing: 0.04em;
+}
+.stat-icon-wrap {
+  width: 28px; height: 28px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem;
+}
+.si-blue  { background: rgba(255,255,255,0.14); }
+.si-green { background: rgba(235,235,238,0.14); }
+.si-gold  { background: rgba(201,162,75,0.14); }
+.si-red   { background: rgba(224,103,92,0.14); }
+.si-teal  { background: rgba(90,167,160,0.14); }
+.si-purple{ background: rgba(165,139,194,0.14); }
+.si-orange{ background: rgba(217,137,74,0.14); }
+.stat-val {
+  font-size: 1.75rem; font-weight: 700;
+  color: var(--text); font-variant-numeric: tabular-nums; line-height: 1;
+}
+.stat-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.3rem; }
+.stat-trend {
+  font-size: 0.7rem; margin-top: 0.4rem;
+  display: flex; align-items: center; gap: 0.25rem;
+}
+.trend-up { color: var(--green); }
+.trend-dn { color: var(--red); }
+
+/* ── Card ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden; margin-bottom: 1.4rem;
+}
+.card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.9rem 1.2rem;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap; gap: 0.5rem;
+}
+.card-title { font-size: 0.92rem; font-weight: 700; }
+.card-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+/* ── Table ── */
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  font-size: 0.72rem; color: var(--muted); font-weight: 600;
+  padding: 0.6rem 1rem; text-align: right;
+  background: rgba(255,255,255,0.018);
+  border-bottom: 1px solid var(--border);
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.05em; white-space: nowrap;
+}
+td {
+  padding: 0.72rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.84rem; vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: rgba(255,255,255,0.03); }
+
+.guild-cell { display: flex; align-items: center; gap: 0.6rem; }
+.guild-icon-img {
+  width: 28px; height: 28px; border-radius: 7px;
+  object-fit: cover; flex-shrink: 0;
+  background: var(--bg3);
+}
+.guild-icon-text {
+  width: 28px; height: 28px; border-radius: 7px;
+  background: var(--bg3); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 700; color: var(--accent2);
+  flex-shrink: 0;
+}
+.guild-name { font-weight: 600; font-size: 0.85rem; }
+.guild-id   { font-size: 0.7rem; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
+
+/* ── Chips ── */
+.chip {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  padding: 0.18rem 0.6rem; border-radius: 4px;
+  font-size: 0.7rem; font-weight: 600;
+}
+.chip-green  { background: rgba(235,235,238,0.1);  color: var(--green);  border: 1px solid rgba(235,235,238,0.22); }
+.chip-blue   { background: rgba(255,255,255,0.1);  color: var(--accent2);border: 1px solid rgba(255,255,255,0.22); }
+.chip-red    { background: rgba(224,103,92,0.1);   color: var(--red);    border: 1px solid rgba(224,103,92,0.22); }
+.chip-gold   { background: rgba(201,162,75,0.1);  color: var(--gold2);  border: 1px solid rgba(201,162,75,0.22); }
+.chip-muted  { background: rgba(99,102,138,0.08); color: var(--muted);  border: 1px solid rgba(99,102,138,0.2); }
+.chip-teal   { background: rgba(90,167,160,0.1);  color: var(--teal);   border: 1px solid rgba(90,167,160,0.22); }
+.chip-purple { background: rgba(165,139,194,0.1);  color: var(--purple); border: 1px solid rgba(165,139,194,0.22); }
+.chip-orange { background: rgba(217,137,74,0.1);  color: var(--orange); border: 1px solid rgba(217,137,74,0.22); }
+
+/* ── Buttons ── */
+.btn {
+  padding: 0.42rem 0.9rem; border-radius: 8px;
+  border: none; cursor: pointer;
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+  font-size: 0.83rem; font-weight: 600;
+  transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  text-decoration: none; white-space: nowrap;
+}
+.btn-primary { background: var(--matte); color: #f2f2f3; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.16); }
+.btn-primary:hover { background: #2a2a2d; }
+.btn-success { background: rgba(235,235,238,0.15); color: var(--green); border: 1px solid rgba(235,235,238,0.3); }
+.btn-success:hover { background: rgba(235,235,238,0.25); }
+.btn-warning { background: rgba(201,162,75,0.12); color: var(--gold2); border: 1px solid rgba(201,162,75,0.28); }
+.btn-warning:hover { background: rgba(201,162,75,0.22); }
+.btn-danger  { background: var(--danger); color: var(--red); border: 1px solid rgba(224,103,92,0.25); }
+.btn-danger:hover  { background: rgba(224,103,92,0.2); }
+.btn-ghost   { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-ghost:hover   { color: var(--text); border-color: var(--border2); }
+.btn-discord { background: var(--discord); color: #fff; }
+.btn-discord:hover { background: #4752c4; }
+.btn-purple  { background: rgba(165,139,194,0.15); color: var(--purple); border: 1px solid rgba(165,139,194,0.3); }
+.btn-purple:hover  { background: rgba(165,139,194,0.25); }
+.btn-sm { padding: 0.28rem 0.65rem; font-size: 0.78rem; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Sessions ── */
+.session-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 1rem;
+}
+.session-card {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1rem;
+  transition: border-color 0.2s, transform 0.2s;
+  animation: fadeIn 0.35s ease both;
+}
+.session-card:hover { border-color: var(--border2); }
+.sc-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.6rem; }
+.sc-guild { font-weight: 700; font-size: 0.9rem; }
+.sc-ch { font-size: 0.76rem; color: var(--muted); margin-top: 0.1rem; }
+.sc-surah { font-size: 0.88rem; color: var(--accent3); margin-bottom: 0.15rem; font-weight: 600; }
+.sc-reciter { font-size: 0.76rem; color: var(--muted); }
+.sc-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 0.75rem; gap: 0.4rem; }
+.sc-tags { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+
+/* ── Control ── */
+.ctrl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.1rem;
+}
+.ctrl-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.2rem;
+}
+.ctrl-title {
+  font-size: 0.88rem; font-weight: 700;
+  color: var(--accent2); margin-bottom: 0.9rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.ctrl-desc {
+  font-size: 0.78rem; color: var(--muted); margin-bottom: 0.8rem; line-height: 1.6;
+}
+.field {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.58rem 0.9rem;
+  color: var(--text);
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+  font-size: 0.87rem;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+.field:focus { border-color: var(--accent); }
+select.field { cursor: pointer; }
+textarea.field { resize: vertical; min-height: 80px; }
+
+/* ── Broadcast ── */
+.broadcast-preview {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1rem; margin-top: 0.8rem;
+  font-size: 0.83rem; line-height: 1.7;
+}
+.broadcast-preview .bcast-tag {
+  display: inline-block; font-size: 0.7rem;
+  background: rgba(201,162,75,0.12); color: var(--gold2);
+  border: 1px solid rgba(201,162,75,0.22);
+  border-radius: 4px; padding: 0.1rem 0.4rem;
+  font-family: 'IBM Plex Mono', monospace; margin-bottom: 0.5rem;
+}
+
+/* ── Blacklist ── */
+.bl-form {
+  display: flex; gap: 0.5rem; margin-bottom: 1rem;
+}
+.bl-form .field { margin-bottom: 0; flex: 1; }
+
+/* ── Stats charts ── */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.1rem; margin-bottom: 1.4rem;
+}
+.chart-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 1.2rem;
+}
+.chart-title {
+  font-size: 0.85rem; font-weight: 700; color: var(--muted);
+  margin-bottom: 0.9rem; display: flex; align-items: center; gap: 0.45rem;
+  font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.04em;
+}
+.chart-wrap { position: relative; height: 180px; }
+
+/* ── Guild detail modal ── */
+.guild-detail-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+.detail-item { background: var(--bg3); border-radius: 8px; padding: 0.7rem 0.9rem; }
+.detail-label { font-size: 0.7rem; color: var(--muted); font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.04em; margin-bottom: 0.25rem; }
+.detail-val   { font-size: 0.88rem; font-weight: 600; }
+
+/* ── Announce form ── */
+.announce-targets {
+  display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;
+}
+.target-btn {
+  padding: 0.3rem 0.8rem; border-radius: 4px; border: 1px solid var(--border);
+  background: transparent; color: var(--muted); font-size: 0.78rem;
+  font-family: 'IBM Plex Sans Arabic', sans-serif; cursor: pointer;
+  transition: all 0.2s;
+}
+.target-btn.selected {
+  background: rgba(255,255,255,0.15); color: var(--accent2);
+  border-color: rgba(255,255,255,0.35);
+}
+.char-counter { font-size: 0.72rem; color: var(--muted); text-align: left; margin-top: -0.5rem; margin-bottom: 0.75rem; }
+
+/* ── Activity log ── */
+.log-list { display: flex; flex-direction: column; }
+.log-item {
+  display: flex; align-items: flex-start; gap: 0.8rem;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 0.82rem; animation: fadeIn 0.3s ease;
+}
+.log-item:last-child { border-bottom: none; }
+.log-icon { font-size: 1rem; flex-shrink: 0; margin-top: 0.05rem; }
+.log-body { flex: 1; }
+.log-action { font-weight: 600; color: var(--text); }
+.log-meta { font-size: 0.72rem; color: var(--muted); margin-top: 0.15rem; }
+.log-time { font-size: 0.7rem; color: var(--muted2); font-family: 'IBM Plex Mono', monospace; white-space: nowrap; }
+
+/* ── Lavalink nodes ── */
+.nodes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.9rem; padding: 1rem;
+}
+.node-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1rem;
+  transition: border-color 0.2s;
+}
+.node-card:hover { border-color: var(--border2); }
+.node-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.7rem; }
+.node-name { font-weight: 700; font-size: 0.88rem; }
+.node-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.node-stat { background: var(--bg2); border-radius: 6px; padding: 0.5rem 0.6rem; }
+.node-stat-label { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.2rem; }
+.node-stat-val   { font-size: 0.9rem; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
+
+/* ── Progress bar ── */
+.prog-wrap { margin: 0.5rem 0; }
+.prog-label { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); margin-bottom: 0.3rem; }
+.prog-bar { height: 5px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+
+/* ── Toggle ── */
+.toggle-wrap { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+.toggle-label { font-size: 0.85rem; flex: 1; }
+.toggle {
+  width: 40px; height: 22px; border-radius: 4px;
+  background: var(--bg3); border: 1px solid var(--border);
+  cursor: pointer; position: relative; flex-shrink: 0;
+  transition: background 0.2s;
+}
+.toggle.on { background: var(--accent); border-color: var(--accent); }
+.toggle::after {
+  content: ''; position: absolute;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--muted); top: 2px; right: 2px;
+  transition: all 0.2s;
+}
+.toggle.on::after { background: #0d0d0e; right: calc(100% - 18px); }
+
+/* ── Danger zone ── */
+.danger-zone {
+  border: 1px solid rgba(224,103,92,0.2);
+  border-radius: var(--r); padding: 1.2rem;
+  background: rgba(224,103,92,0.03);
+  margin-top: 0.5rem;
+}
+.danger-zone .ctrl-title { color: var(--red); }
+.danger-zone .ctrl-desc { color: rgba(224,103,92,0.6); }
+
+/* ── Pages ── */
+.page { display: none; }
+.page.active { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+/* ── Login wall ── */
+#loginWall {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 0; text-align: center; padding: 2rem;
+}
+#loginWall::before {
+  content:''; position:fixed; inset:0; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+#loginWall::after {
+  content:''; position:fixed; top:-200px; right:-200px; pointer-events:none;
+  width:600px; height:600px; border-radius:50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.036) 0%, transparent 65%);
+}
+.lw-card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 2.8rem 2.5rem 2.5rem;
+  text-align: center;
+  max-width: 440px; width: 100%;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06) inset;
+  position: relative; overflow: hidden; z-index: 1;
+  animation: lwSlideUp 0.5s 0.05s ease both;
+}
+@keyframes lwSlideUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:none} }
+.lw-shield {
+  width: 64px; height: 64px; border-radius: 18px;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem; margin: 0 auto 1.2rem;
+  
+}
+.lw-icon { font-size: 3.5rem; }
+.lw-title { font-size: 1.5rem; font-weight: 700; color: var(--accent3); margin-bottom: 0.4rem; }
+.lw-sub { color: var(--muted); font-size: 0.88rem; max-width: 320px; line-height: 1.7; margin: 0 auto 1.8rem; }
+.lw-security-note {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: rgba(255,255,255,0.027);
+  border: 1px solid rgba(255,255,255,0.068);
+  border-radius: 8px; padding: 0.6rem 0.9rem;
+  font-size: 0.76rem; color: var(--muted);
+  text-align: right; margin-top: 1.2rem;
+}
+.lw-security-note span { font-size: 1rem; }
+
+/* ── Modal ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 400;
+  background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 16px; padding: 1.8rem;
+  max-width: 480px; width: 92%;
+  animation: fadeIn 0.22s ease;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-icon  { font-size: 2.2rem; margin-bottom: 0.6rem; }
+.modal-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem; }
+.modal-sub   { color: var(--muted); font-size: 0.83rem; margin-bottom: 1.3rem; line-height: 1.7; }
+.modal-btns  { display: flex; gap: 0.7rem; justify-content: flex-end; }
+
+/* ── Toast ── */
+#toast {
+  position: fixed; bottom: 1.5rem; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--card2); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 0.6rem 1.3rem;
+  font-size: 0.84rem; z-index: 999;
+  transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+  pointer-events: none; white-space: nowrap;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.45);
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── Spinner ── */
+.spinner {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--accent);
+  animation: spin 0.7s linear infinite;
+  margin: 2rem auto; display: block;
+}
+@keyframes spin { to{transform:rotate(360deg)} }
+
+.empty { text-align:center; padding:2.5rem; color:var(--muted); font-size:0.86rem; }
+
+/* ── Search ── */
+.search-wrap { position: relative; }
+.search-wrap input { padding-right: 2rem; }
+.search-icon {
+  position: absolute; right: 0.65rem; top: 50%; transform: translateY(-50%);
+  color: var(--muted); font-size: 0.85rem; pointer-events: none;
+}
+
+/* ── Ping badge ── */
+.ping-badge {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem; color: var(--green);
+  background: rgba(235,235,238,0.08);
+  border: 1px solid rgba(235,235,238,0.2);
+  border-radius: 4px; padding: 0.25rem 0.8rem;
+}
+
+/* ── Info row ── */
+.info-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.83rem;
+}
+/* ── Owner-panel polish ── */
+.nav-section { letter-spacing: 0; font-family: inherit; font-size: 0.72rem; }
+.nav-item { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; border-radius: 6px; }
+.ov-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; margin-bottom: 1.4rem; }
+.ov-grid .card { margin-bottom: 0; }
+.ov-list { padding: 0.3rem 0; }
+.ov-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.ov-row:last-child { border-bottom: none; }
+.ov-main { flex: 1; min-width: 0; }
+.ov-title { font-weight: 700; font-size: 0.86rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ov-sub { font-size: 0.74rem; color: var(--muted); margin-top: 0.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ov-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; background: var(--muted2); }
+.ov-dot.on { background: var(--green);  }
+.ov-dot.paused { background: var(--gold); }
+.ov-more { text-align: center; font-size: 0.76rem; color: var(--muted); padding: 0.5rem; }
+.ov-skel { height: 44px; margin: 0.5rem 1rem; border-radius: 8px; background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+.lw-notice { margin: 0 0 1rem; padding: 0.7rem 0.9rem; border-radius: 10px; font-size: 0.84rem; line-height: 1.6;
+  background: rgba(224,103,92,0.08); border: 1px solid rgba(224,103,92,0.25); color: var(--red); text-align: right; }
+.lw-notice[hidden] { display: none; }
+@media (max-width: 900px) { .ov-grid { grid-template-columns: 1fr; } }
+@media (max-width: 700px) {
+  .stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.7rem; }
+  .stat-card { padding: 0.9rem 0.8rem; }
+  .stat-val { font-size: 1.45rem; }
+  .topbar { flex-wrap: wrap; gap: 0.6rem; }
+  .page-title { font-size: 1.35rem; }
+  .card-head { padding: 0.8rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+.info-row:last-child { border-bottom: none; }
+
+.info-label { color: var(--muted); }
+.info-val { font-weight: 600; font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; }
+
+/* ── Responsive ── */
+@media (max-width: 700px) {
+  .sidebar { width: 58px; }
+  .brand-name, .brand-badge, .nav-item .label, .sidebar-username,
+  .nav-section, .nav-badge { display: none; }
+  .sidebar-brand { padding: 1rem; justify-content: center; }
+  .brand-icon { margin: 0; }
+  .nav-item { justify-content: center; padding: 0.7rem; }
+  .nav-item .ni { margin: 0; }
+  .sidebar-footer { justify-content: center; }
+  .sidebar-username, .logout-btn { display: none; }
+  .main { margin-right: 58px; }
+  .main-inner { padding: 1rem; }
+}
+
+/* ── Owner-panel polish ───────────────────────────────────────────── */
+.btn.on { background: rgba(235,235,238,0.12); color: var(--green); border-color: rgba(235,235,238,0.35); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.card-actions { flex-wrap: wrap; }
+td.td-actions { white-space: normal; }
+@media (max-width: 700px) {
+  table.cards, table.cards tbody, table.cards tr, table.cards td { display: block; width: auto; }
+  table.cards thead { display: none; }
+  table.cards tr { border: 1px solid var(--border); border-radius: 12px; margin: 0.6rem 0.7rem; padding: 0.3rem 0; background: rgba(255,255,255,0.015); }
+  table.cards tr:last-child td { border-bottom: none; }
+  table.cards td { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.38rem 0.9rem; border-bottom: none; }
+  table.cards td[data-label]::before { content: attr(data-label); color: var(--muted); font-size: 0.74rem; flex-shrink: 0; }
+  table.cards td:first-child { padding-top: 0.7rem; }
+  table.cards td:empty { display: none; }
+  table.cards td.td-actions { padding-bottom: 0.7rem; }
+  table.cards td.empty { display: block; }
+  table.cards tbody tr:hover td { background: none; }
+}
+
+/* ══ Owner panel — phase 2 ══ */
+.own-row { display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; }
+.own-row .field { margin:0; width:auto; padding:0.3rem 0.6rem; font-size:0.78rem; }
+.own-grid2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:0.9rem; margin-bottom:1.2rem; }
+.bulk-bar { display:none; align-items:center; gap:0.5rem; flex-wrap:wrap; padding:0.65rem 1rem; margin-bottom:0.8rem;
+  background:rgba(255,255,255,0.045); border:1px solid rgba(255,255,255,0.135); border-radius:var(--r); position:sticky; top:0.5rem; z-index:5; }
+.bulk-bar.show { display:flex; }
+.bulk-bar .bulk-count { font-weight:700; color:var(--accent3); margin-left:auto; font-size:0.85rem; }
+input.sel { width:16px; height:16px; accent-color:var(--accent); cursor:pointer; }
+.logbox { background:var(--bg2); border:1px solid var(--border); border-radius:var(--r); max-height:68vh; overflow:auto;
+  font-family:'IBM Plex Mono',monospace; font-size:0.72rem; direction:ltr; text-align:left; }
+.logline { display:flex; gap:0.6rem; padding:0.3rem 0.8rem; border-bottom:1px solid var(--border); line-height:1.5; }
+.logline:last-child { border-bottom:0; }
+.logline .lt { color:var(--muted2); flex-shrink:0; }
+.logline .ll { flex-shrink:0; width:3.9rem; font-weight:700; }
+.logline .lm { white-space:pre-wrap; word-break:break-word; min-width:0; }
+.lv-ERROR .ll { color:var(--red); } .lv-WARN .ll { color:var(--gold2); } .lv-INFO .ll { color:var(--accent2); }
+.lv-SUCCESS .ll { color:var(--green); } .lv-DEBUG .ll { color:var(--muted); }
+.lv-ERROR { background:rgba(224,103,92,0.05); }
+.deep-sec { margin:0.9rem 0 0; }
+.deep-h { font-size:0.7rem; font-weight:700; color:var(--muted); letter-spacing:0.05em; margin-bottom:0.4rem; }
+.perm-row { display:flex; flex-wrap:wrap; gap:0.3rem; }
+.vc-row { display:flex; align-items:center; gap:0.5rem; font-size:0.8rem; padding:0.28rem 0; border-bottom:1px solid var(--border); }
+.vc-row:last-child { border-bottom:0; }
+.sys-bar { height:6px; border-radius:3px; background:var(--bg3); overflow:hidden; margin-top:0.5rem; }
+.sys-bar > i { display:block; height:100%; background:var(--accent); border-radius:3px; transition:width 0.4s; }
+.sys-bar > i.warn { background:var(--gold2); } .sys-bar > i.bad { background:var(--red); }
+
+.role-mod [data-owner] { display:none !important; }
+.adv { border:1px solid var(--border); border-radius:var(--r); margin-bottom:0.5rem; background:var(--bg2); }
+.adv > summary { cursor:pointer; padding:0.65rem 0.9rem; font-weight:700; font-size:0.85rem; list-style:none; }
+.adv > summary::-webkit-details-marker { display:none; }
+.adv[open] > summary { border-bottom:1px solid var(--border); color:var(--accent3); }
+.adv-body { padding:0.8rem 0.9rem; display:grid; gap:0.55rem; }
+.adv-body .field { margin:0; width:100%; }
+.adv-body label { font-size:0.74rem; color:var(--muted); font-weight:600; }
+.adv-row { display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; }
+.adv-row > .field { flex:1; min-width:140px; }
+.adv-check { display:flex; align-items:center; gap:0.45rem; font-size:0.82rem; }
+.cmd-chip { cursor:pointer; user-select:none; }
+.ctrl-card label { font-size:0.74rem; color:var(--muted); font-weight:600; display:block; margin-top:0.2rem; }
+.cc-lockstate { display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.6rem; }
+.cc-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:0.9rem; align-items:start; }
+.cc-row { display:flex; align-items:center; gap:0.6rem; padding:0.4rem 0; border-bottom:1px solid var(--border); font-size:0.84rem; }
+.cc-row:last-child { border-bottom:0; }
+.cc-row .cc-desc { color:var(--muted); font-size:0.74rem; display:block; }
+.cc-row > span:first-child { flex:1; }
+.q-row { display:flex; align-items:center; gap:0.4rem; padding:0.3rem 0; border-bottom:1px solid var(--border); font-size:0.8rem; }
+.q-row:last-child { border-bottom:0; }
+.q-row .q-n { color:var(--muted); width:1.6rem; text-align:center; }
+.q-row .q-t { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.q-row .q-t small { color:var(--muted); }
+.cmd-chip.on { background:rgba(224,103,92,0.15); color:var(--red); border:1px solid rgba(224,103,92,0.4); }
+
+/* ── Owner phase 4: alerts, health, tags, schedule, audit filters, quick search ── */
+.alert-list { display:grid; gap:0.5rem; padding:0.2rem 1rem 1rem; }
+.alert-item { display:flex; gap:0.65rem; align-items:flex-start; padding:0.6rem 0.8rem; border:1px solid var(--border); border-radius:var(--r); background:var(--bg2); font-size:0.82rem; cursor:pointer; }
+.alert-item.critical { border-color:rgba(224,103,92,0.4); background:rgba(224,103,92,0.07); }
+.alert-item.warn { border-color:rgba(201,162,75,0.35); background:rgba(201,162,75,0.06); }
+.alert-item .at { font-weight:700; }
+.alert-item .ad { color:var(--muted); font-size:0.76rem; margin-top:0.1rem; }
+.alert-ok { padding:0.2rem 1rem 1rem; font-size:0.84rem; color:var(--green); }
+.issue-list { display:flex; flex-wrap:wrap; gap:0.3rem; }
+.tag-chip { display:inline-block; padding:0.05rem 0.45rem; margin:0.15rem 0.2rem 0 0; border-radius: 4px; font-size: 0.7rem; background:rgba(165,139,194,0.12); color:var(--purple); border:1px solid rgba(165,139,194,0.25); }
+.sched-row { display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; margin-top:0.9rem; padding-top:0.9rem; border-top:1px solid var(--border); }
+.sched-row .field { margin:0; width:auto; }
+.bh-row { padding:0.6rem 0; border-bottom:1px solid var(--border); font-size:0.82rem; }
+.bh-row:last-child { border-bottom:0; }
+.audit-bar { display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; margin-bottom:0.9rem; }
+.audit-bar .field { margin:0; width:auto; padding:0.3rem 0.6rem; font-size:0.78rem; }
+#cmdk .modal { max-width:560px; padding:0.9rem; text-align:right; }
+#cmdkList { max-height:50vh; overflow-y:auto; margin-top:0.6rem; display:grid; gap:0.2rem; }
+.cmdk-item { display:flex; gap:0.6rem; align-items:center; padding:0.5rem 0.7rem; border-radius:8px; cursor:pointer; font-size:0.85rem; }
+.cmdk-item.sel, .cmdk-item:hover { background:rgba(255,255,255,0.063); }
+.cmdk-item small { color:var(--muted); margin-right:auto; font-family:'IBM Plex Mono',monospace; font-size: 0.7rem; }
+
+/* ── Servers page: tiles, filters, saved views, drawer ── */
+.gf-tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:0.7rem; margin-bottom:0.9rem; }
+.gf-tile { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:0.7rem 0.9rem; }
+.gf-tile b { display:block; font-size:1.35rem; font-weight:700; line-height:1.25; }
+.gf-tile span { font-size:0.74rem; color:var(--muted); }
+.gf-bar { display:flex; gap:0.6rem 1rem; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:0.6rem; }
+.gf-chips, .gf-tools { display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center; }
+.gf-tools .field { margin:0; width:auto; padding:0.3rem 0.6rem; font-size:0.78rem; }
+.gf-chip { display:inline-flex; gap:0.35rem; align-items:center; padding:0.28rem 0.7rem; border-radius: 4px; font:inherit; font-size:0.78rem; cursor:pointer;
+  background:var(--bg2); color:var(--text); border:1px solid var(--border); transition:background .15s,border-color .15s; }
+.gf-chip:hover { border-color:var(--border2); }
+.gf-chip small { color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size: 0.7rem; }
+.gf-chip[aria-pressed="true"] { background:rgba(255,255,255,0.09); border-color:var(--accent); color:var(--accent3); }
+.gf-chip[aria-pressed="true"] small { color:var(--accent3); }
+.gf-chip:focus-visible, .dr-tabs button:focus-visible, .dr-id:focus-visible { outline:2px solid var(--accent2); outline-offset:2px; }
+.gf-views { display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.8rem; }
+.gf-views:empty { display:none; }
+.gf-view { display:inline-flex; align-items:center; border:1px dashed var(--border2); border-radius: 4px; font-size:0.76rem; overflow:hidden; }
+.gf-view > button { background:none; border:0; color:var(--accent3); font:inherit; padding:0.22rem 0.7rem; cursor:pointer; }
+.gf-view > button + button { color:var(--muted); padding:0.22rem 0.5rem; border-right:1px solid var(--border); }
+.gf-view > button:hover { background:rgba(255,255,255,0.054); }
+.gf-more { display:flex; gap:0.5rem; justify-content:center; padding:0.8rem; border-top:1px solid var(--border); }
+.bulk-group { display:flex; gap:0.35rem; flex-wrap:wrap; }
+.bulk-sep { width:1px; align-self:stretch; background:var(--border2); margin:0 0.2rem; }
+.bulk-bar .bulk-count { margin-left:0; margin-right:0.2rem; }
+.gtable tbody tr { transition:background .12s; }
+.gtable tbody tr.is-open td { background:rgba(255,255,255,0.041); }
+.gtable tbody tr.is-sel td { background:rgba(255,255,255,0.027); }
+.st-badges { display:flex; gap:0.3rem; flex-wrap:wrap; align-items:center; }
+.mini-actions { display:flex; gap:0.3rem; align-items:center; }
+.btn-icon { padding:0.28rem 0.5rem; }
+
+.drawer-overlay { display:none; position:fixed; inset:0; z-index:300; background:rgba(0,0,0,0.55); backdrop-filter:blur(2px); }
+.drawer-overlay.open { display:block; }
+.drawer { position:absolute; top:0; bottom:0; left:0; width:min(600px,100vw); background:var(--bg2); border-right:1px solid var(--border2);
+  box-shadow:12px 0 50px rgba(0,0,0,0.5); display:flex; flex-direction:column; animation:drIn .2s ease; text-align:right; }
+@keyframes drIn { from { transform:translateX(-24px); opacity:0; } to { transform:none; opacity:1; } }
+@media (prefers-reduced-motion: reduce) { .drawer { animation:none; } }
+.dr-head { display:flex; align-items:center; gap:0.8rem; padding:1rem 1.1rem 0.6rem; }
+.dr-icon { width:46px; height:46px; border-radius:12px; background:var(--bg3); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; }
+.dr-title { min-width:0; flex:1; }
+.dr-name { font-weight:700; font-size:1.02rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dr-id { background:none; border:0; padding:0; color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:0.72rem; cursor:pointer; }
+.dr-id:hover { color:var(--accent3); }
+.dr-nav { display:flex; gap:0.3rem; flex-shrink:0; }
+.dr-badges { display:flex; gap:0.3rem; flex-wrap:wrap; padding:0 1.1rem; min-height:0.2rem; }
+.dr-quick { display:flex; gap:0.4rem; flex-wrap:wrap; padding:0.7rem 1.1rem 0.2rem; }
+.dr-tabs { display:flex; gap:0.15rem; overflow-x:auto; padding:0.5rem 0.8rem 0; border-bottom:1px solid var(--border); scrollbar-width:thin; }
+.dr-tabs button { background:none; border:0; border-bottom:2px solid transparent; color:var(--muted); font:inherit; font-size:0.82rem; font-weight:600; padding:0.55rem 0.8rem; cursor:pointer; white-space:nowrap; }
+.dr-tabs button:hover { color:var(--text); }
+.dr-tabs button.active { color:var(--accent3); border-bottom-color:var(--accent); }
+.dr-body { flex:1; overflow-y:auto; padding:1rem 1.1rem 2rem; }
+.dr-pane { display:none; }
+.dr-pane.active { display:block; }
+.dr-card { border:1px solid var(--border); border-radius:var(--r); background:var(--card); padding:0.85rem 0.95rem; margin-bottom:0.8rem; display:grid; gap:0.55rem; }
+.dr-card > h4 { margin:0; font-size:0.85rem; color:var(--accent3); }
+.dr-card label { font-size:0.74rem; color:var(--muted); font-weight:600; }
+.dr-card .field { margin:0; width:100%; }
+.dr-card.danger { border-color:rgba(224,103,92,0.35); background:rgba(224,103,92,0.04); }
+.dr-card.danger > h4 { color:var(--red); }
+.dr-hint { font-size:0.76rem; color:var(--muted); line-height:1.7; }
+.np-card { display:grid; gap:0.5rem; }
+.np-title { font-weight:700; font-size:0.95rem; }
+.np-ctl { display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap; }
+.np-ctl .btn.on { background:rgba(255,255,255,0.113); color:var(--accent3); border-color:var(--accent); }
+.np-vol { display:flex; align-items:center; gap:0.5rem; flex:1; min-width:170px; }
+.np-vol input[type=range] { flex:1; accent-color:var(--accent); }
+.np-vol output { font-family:'IBM Plex Mono',monospace; font-size:0.75rem; min-width:2.6rem; text-align:left; }
+@media (max-width:700px) { .drawer { width:100vw; border-right:0; } .bulk-sep { display:none; } .gf-tools { width:100%; } }
+
+/* ── Design layer (phase 6/7) ─────────────────────────────────────────────
+   Flat surfaces, hairline borders, one emerald accent on warm ink; no gradients, glow or emoji. */
+::selection { background: rgba(235,235,238,0.3); color: #fff; }
+html { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.25) transparent; }
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.35); }
+body { -webkit-font-smoothing: antialiased; line-height: 1.6; }
+table, .stat-val, .info-val, .guild-id, .log-time { font-variant-numeric: tabular-nums; }
+.page-title { letter-spacing: 0; }
+.page-title em { color: var(--accent2); font-style: normal; }
+
+/* marks that replace pictograms */
+.brand-icon, .lw-shield {
+  font-family: 'Amiri', serif; font-weight: 700; color: var(--accent3);
+  background: transparent; border: 1px solid var(--accent); border-radius: 4px; box-shadow: none;
+}
+/* the bot's own picture (same one used in the embeds), round with a thin accent ring */
+.brand-icon, .lw-shield {
+  display: block; object-fit: cover; border-radius: 50%; padding: 0;
+  background: var(--matte); border: 1.5px solid var(--accent);
+}
+.brand-icon { width: 40px; height: 40px; flex-shrink: 0; box-shadow: 0 0 0 3px rgba(255,255,255,0.04), 0 4px 12px rgba(0,0,0,0.35); }
+.lw-shield { width: 84px; height: 84px; margin: 0 auto 1.2rem; box-shadow: 0 0 0 5px rgba(255,255,255,0.05), 0 10px 30px rgba(0,0,0,0.45); }
+.stat-icon-wrap { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+.si-blue { background: var(--accent2); } .si-green { background: var(--green); } .si-gold { background: var(--gold); }
+.si-red { background: var(--red); } .si-teal { background: var(--teal); } .si-purple { background: var(--purple); } .si-orange { background: var(--orange); }
+.log-icon { width: 7px; height: 7px; border-radius: 2px; background: var(--muted2); margin-top: 0.5rem; }
+.lv-dot { width: 8px; height: 8px; border-radius: 2px; margin-top: 0.35rem; flex-shrink: 0; background: var(--muted2); }
+.critical .lv-dot { background: var(--red); } .warn .lv-dot { background: var(--gold); } .info .lv-dot { background: var(--accent2); }
+.modal-icon:empty, .dr-icon:empty { display: none; }
+.nav-item .ni { width: 18px; height: 18px; flex-shrink: 0; opacity: 0.85; }
+.nav-item.active .ni { opacity: 1; color: var(--accent2); }
+
+/* surfaces */
+.card, .stat-card, .ctrl-card, .dr-card, .modal, .gf-tile { box-shadow: none; }
+.modal { border-radius: var(--r); }
+tbody tr { transition: background .12s; }
+tbody tr:hover td { background: rgba(255,255,255,0.04); }
+thead th { letter-spacing: 0; }
+
+/* navigation */
+.nav-item { min-height: 40px; }
+.nav-item:hover { background: rgba(255,255,255,0.05); }
+.nav-item.active { background: rgba(255,255,255,0.07); color: var(--text); font-weight: 600; }
+.nav-section { color: var(--muted2); }
+.nav-help { margin-top: auto; }
+
+/* controls */
+.btn { min-height: 34px; justify-content: center; border-radius: 5px; }
+.btn-sm { min-height: 30px; }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn-primary { background: var(--matte); color: #f2f2f3; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.16); }
+.btn-primary:hover { background: #2a2a2d; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.28); }
+.field { border-radius: 5px; }
+.field:focus, .field:focus-visible { border-color: var(--accent2); box-shadow: 0 0 0 2px rgba(235,235,238,0.22); outline: none; }
+.field::placeholder { color: var(--muted2); opacity: 1; }
+:focus-visible { outline-color: var(--accent2); }
+
+/* shortcuts dialog */
+#shortcuts .modal { max-width: 460px; padding: 1.1rem 1.2rem; text-align: right; }
+#shortcuts h3 { font-size: 1rem; margin: 0 0 0.8rem; color: var(--accent3); }
+.sc-list { display: grid; gap: 0.15rem; }
+.sc-item { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.45rem 0; border-bottom: 1px solid var(--border); font-size: 0.86rem; }
+.sc-item:last-child { border-bottom: 0; }
+kbd { font-family: 'IBM Plex Mono', monospace; font-size: 0.74rem; background: var(--bg3); border: 1px solid var(--border2); border-bottom-width: 2px; border-radius: 4px; padding: 0.1rem 0.45rem; color: var(--text); direction: ltr; display: inline-block; }
+
+@media (max-width: 700px) {
+  .btn { min-height: 40px; }
+  .btn-sm { min-height: 36px; }
+  .field { font-size: 16px; }          /* stops iOS zooming the page when a field is focused */
+  .nav-item { min-height: 46px; }
+  .gf-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+  .gf-tile { padding: 0.55rem 0.7rem; }
+  .gf-tile b { font-size: 1.1rem; }
+}
+@media (prefers-contrast: more) {
+  :root { --border: rgba(255,255,255,0.4); --border2: rgba(255,255,255,0.65); --muted: #c4bfae; --muted2: #b0aa98; }
+}
+
+/* ══ Owner UI polish: buttons, switches, cards, chips (override layer) ══ */
+:root { --ease: cubic-bezier(.2,.8,.2,1); --on: #3fb98a; --on-soft: rgba(63,185,138,0.14); --r-lg: 14px; }
+
+/* Buttons: rounder, tactile, clear focus */
+.btn {
+  border-radius: 999px; padding: 0.46rem 1.05rem; letter-spacing: .1px;
+  transition: transform .15s var(--ease), background .2s, border-color .2s, box-shadow .2s, color .2s;
+}
+.btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 16px -8px rgba(0,0,0,.8); }
+.btn:active:not(:disabled) { transform: translateY(0) scale(.97); box-shadow: none; }
+.btn:focus-visible, .toggle:focus-visible, .cmd-chip:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+.btn-sm { padding: 0.32rem 0.85rem; }
+.btn-primary { background: linear-gradient(180deg,#2c2c2f,#1f1f21); }
+.btn-primary:hover { background: linear-gradient(180deg,#36363a,#252528) !important; }
+.btn-warning { background: rgba(201,162,75,.14); }
+.btn-danger  { border-color: rgba(224,103,92,.35); }
+.btn-danger:hover:not(:disabled)  { background: rgba(224,103,92,.28); color:#ff8a7e; }
+.btn-ghost:hover:not(:disabled)   { background: rgba(255,255,255,.05); }
+.btn.is-busy { pointer-events:none; opacity:.65; }
+.btn.is-busy::after { content:''; width:.8em; height:.8em; border-radius:50%; border:2px solid currentColor; border-top-color:transparent; animation:btnspin .7s linear infinite; }
+@keyframes btnspin { to { transform: rotate(360deg); } }
+
+/* Switches: pill, green = ON, red-ish = OFF, so state reads at a glance */
+.toggle { width: 46px; height: 26px; border-radius: 999px; background: rgba(224,103,92,.16); border: 1px solid rgba(224,103,92,.38); transition: background .25s, border-color .25s; }
+.toggle::after { width: 20px; height: 20px; top: 2px; right: 2px; background: #d8d8dc; box-shadow: 0 1px 3px rgba(0,0,0,.5); transition: right .25s var(--ease), background .25s; }
+.toggle.on { background: var(--on-soft); border-color: rgba(63,185,138,.55); }
+.toggle.on::after { background: var(--on); right: calc(100% - 22px); }
+.toggle:hover { filter: brightness(1.15); }
+
+/* Cards: softer, with accent rail on the title */
+.ctrl-card { border-radius: var(--r-lg); padding: 1.3rem 1.3rem 1.2rem; background: linear-gradient(180deg,var(--card2),var(--card)); transition: border-color .2s, transform .2s var(--ease); }
+.ctrl-card:hover { border-color: var(--border2); }
+.ctrl-title { font-size: .95rem; padding-inline-start: .65rem; position: relative; }
+.ctrl-title::before { content:''; position:absolute; inset-block:.12em; inset-inline-start:0; width:3px; border-radius:3px; background: var(--accent); }
+.danger-zone .ctrl-title::before { background: var(--red); }
+.ctrl-card.danger-zone { background: linear-gradient(180deg,rgba(224,103,92,.09),rgba(224,103,92,.03)); border-color: rgba(224,103,92,.4); margin-top: 0; }
+.cc-grid { gap: 1.1rem; }
+.cc-row { padding: .6rem .5rem; margin-inline: -.5rem; border-radius: 10px; transition: background .15s; }
+.cc-row:hover { background: rgba(255,255,255,.035); }
+
+/* Command chips: pill, red + strike-through when disabled */
+.chip { border-radius: 999px; }
+.cmd-chip { padding: .28rem .8rem; font-size: .76rem; transition: all .15s var(--ease); }
+.cmd-chip:hover { transform: translateY(-1px); border-color: var(--border2); color: var(--text); }
+.cmd-chip.on { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.perm-row { gap: .45rem; margin-bottom: .9rem; }
+
+/* Inputs */
+.field { border-radius: 10px; }
+.field:focus { border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(255,255,255,.07); }
+
+@media (max-width: 640px) { .cc-grid { grid-template-columns: 1fr; } .ctrl-card { padding: 1.05rem; } }
+@media (prefers-reduced-motion: reduce) { .btn, .toggle, .toggle::after, .cmd-chip, .ctrl-card { transition: none !important; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-overview" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 17V10M10 17V3M16 17V12M2 17.5h16"/></symbol><symbol id="i-analytics" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M2.5 15l5-6 4 3 5.5-7M2 17.5h16"/></symbol><symbol id="i-activity" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 5h12M4 10h12M4 15h8"/></symbol><symbol id="i-guilds" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 17h14M5 17V6h10v11M8 9h4M8 12h4"/></symbol><symbol id="i-sessions" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M7 4l9 6-9 6z"/></symbol><symbol id="i-remote" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4h8v3M4 4v12h12v-8M9 11l8-8M12 3h5v5"/></symbol><symbol id="i-blacklist" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M10 3a7 7 0 100 14 7 7 0 000-14zM5 15L15 5"/></symbol><symbol id="i-system" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 4h14v9H3zM7 17h6M10 13v4"/></symbol><symbol id="i-logs" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 3h7l4 4v10H5zM8 10h5M8 13h5"/></symbol><symbol id="i-health" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M2 10h4l2-5 3 10 2-5h5"/></symbol><symbol id="i-cleanup" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 6h12M8 6V3h4v3M5 6l1 11h8l1-11"/></symbol><symbol id="i-broadcast" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 8v4h3l7 4V4L6 8zM16 8v4"/></symbol><symbol id="i-lavalink" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M2 12h3l2-6 3 10 2-8 1 4h5"/></symbol><symbol id="i-control" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 6h14M3 14h14M7 4v4M13 12v4"/></symbol><symbol id="i-keys" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M2 5h16v10H2zM5 8h1M9 8h1M13 8h1M6 12h8"/></symbol></defs></svg>
+
+
+<!-- Login Wall -->
+<div id="loginWall">
+  <div class="lw-card">
+    <img class="lw-shield" src="/assets/logo.png" alt="شعار البوت" width="84" height="84" decoding="async">
+    <div class="lw-title">لوحة تحكم المالك</div>
+    <div class="lw-sub">هذه اللوحة لمالك البوت فقط.<br>سجّل الدخول بحساب Discord المالك للمتابعة.</div>
+    <div id="authNotice" class="lw-notice" role="alert" hidden></div>
+    <a id="loginBtn" href="#" class="btn btn-discord" style="width:100%;justify-content:center;padding:0.75rem 1.5rem;font-size:0.97rem;border-radius:12px;">
+      <svg width="17" height="17" viewBox="0 0 71 55" fill="currentColor">
+        <path d="M60.1 4.9A58.5 58.5 0 0 0 45.7.4a.2.2 0 0 0-.2.1 40.7 40.7 0 0 0-1.8 3.7 54 54 0 0 0-16.2 0A37.4 37.4 0 0 0 25.6.5a.2.2 0 0 0-.2-.1A58.4 58.4 0 0 0 11 4.9a.2.2 0 0 0-.1.1C1.6 18.9-1 32.5.3 46a.2.2 0 0 0 .1.1 58.8 58.8 0 0 0 17.7 9 .2.2 0 0 0 .2-.1 42 42 0 0 0 3.6-5.9.2.2 0 0 0-.1-.3 38.7 38.7 0 0 1-5.5-2.6.2.2 0 0 1 0-.4l1.1-.8a.2.2 0 0 1 .2 0c11.5 5.3 24 5.3 35.4 0a.2.2 0 0 1 .2 0l1.1.8a.2.2 0 0 1 0 .4 36.2 36.2 0 0 1-5.5 2.6.2.2 0 0 0-.1.3 47.1 47.1 0 0 0 3.6 5.9.2.2 0 0 0 .2.1 58.6 58.6 0 0 0 17.8-9 .2.2 0 0 0 .1-.1c1.5-15.8-2.5-29.3-10.6-41.4a.2.2 0 0 0-.1-.1zM23.7 37.8c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.6 0 6.5 3.3 6.4 7.2 0 4-2.8 7.2-6.4 7.2zm23.6 0c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.6 0 6.5 3.3 6.4 7.2 0 4-2.8 7.2-6.4 7.2z"/>
+      </svg>
+      تسجيل الدخول بـ Discord
+    </a>
+    <div class="lw-security-note">
+      
+      الدخول مسموح فقط للحسابات المحددة في <code style="font-family:'IBM Plex Mono',monospace;color:var(--accent2)">ADMIN_IDS</code>
+    </div>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <img class="brand-icon" src="/assets/logo.png" alt="شعار البوت" width="40" height="40" decoding="async">
+    <span class="brand-name">داشبورد المالك</span>
+    <span class="brand-badge" id="roleBadge">المالك</span>
+  </div>
+  <nav class="sidebar-nav">
+    <span class="nav-section">المراقبة</span>
+    <a class="nav-item active" data-page="overview" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-overview"/></svg><span class="label">نظرة عامة</span>
+      <span class="nav-badge" id="alertsBadge" data-owner style="display:none">0</span>
+    </a>
+    <a class="nav-item" data-page="analytics" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-analytics"/></svg><span class="label">الإحصائيات</span>
+    </a>
+    <a class="nav-item" data-page="activity" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-activity"/></svg><span class="label">سجل النشاط</span>
+      <span class="nav-badge green" id="newLogsBadge" style="display:none">جديد</span>
+    </a>
+    <a class="nav-item" data-owner data-page="system" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-system"/></svg><span class="label">مراقبة النظام</span>
+    </a>
+    <a class="nav-item" data-owner data-page="health" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-health"/></svg><span class="label">صحة السيرفرات</span>
+      <span class="nav-badge" id="healthBadge" style="display:none">0</span>
+    </a>
+    <a class="nav-item" data-owner data-page="logs" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-logs"/></svg><span class="label">سجلات البوت</span>
+    </a>
+
+    <span class="nav-section">إدارة السيرفرات</span>
+    <a class="nav-item" data-page="guilds" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-guilds"/></svg><span class="label">السيرفرات</span>
+    </a>
+    <a class="nav-item" data-page="sessions" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-sessions"/></svg><span class="label">الجلسات</span>
+    </a>
+    <a class="nav-item" data-page="remote" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-remote"/></svg><span class="label">تشغيل عن بعد</span>
+    </a>
+    <a class="nav-item" data-owner data-page="blacklist" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-blacklist"/></svg><span class="label">القائمة السوداء</span>
+      <span class="nav-badge" id="blBadge" style="display:none">0</span>
+    </a>
+    <a class="nav-item" data-owner data-page="cleanup" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-cleanup"/></svg><span class="label">تنظيف السيرفرات</span>
+    </a>
+
+    <span class="nav-section" data-owner>التحكم بالبوت</span>
+    <a class="nav-item" data-owner data-page="cc" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-control"/></svg><span class="label">مركز التحكم</span>
+    </a>
+    <a class="nav-item" data-owner data-page="control" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-control"/></svg><span class="label">إعدادات البوت</span>
+    </a>
+    <a class="nav-item" data-owner data-page="broadcast" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-broadcast"/></svg><span class="label">الإعلانات</span>
+    </a>
+    <a class="nav-item" data-owner data-page="lavalink" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-lavalink"/></svg><span class="label">محرك الصوت</span>
+    </a>
+    <a class="nav-item" data-owner data-page="fleet" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-sessions"/></svg><span class="label">الأسطول و /pull</span>
+    </a>
+    <a class="nav-item" data-owner data-page="stations" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-broadcast"/></svg><span class="label">المحطات والقرّاء</span>
+    </a>
+    <a class="nav-item" data-owner data-page="content" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-logs"/></svg><span class="label">الورد والمناسبات</span>
+    </a>
+    <a class="nav-item" data-owner data-page="security" data-act="page">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-blacklist"/></svg><span class="label">الأمان والصلاحيات</span>
+    </a>
+    <a class="nav-item nav-help" id="shortcutsBtn" title="اختصارات لوحة المفاتيح ( ? )">
+      <svg class="ni" width="18" height="18" aria-hidden="true"><use href="#i-keys"/></svg><span class="label">الاختصارات</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer" id="sidebarFooter" style="display:none">
+    <img class="sidebar-avatar" id="sidebarAvatar" src="" alt="">
+    <span class="sidebar-username" id="sidebarName"></span>
+    <button class="logout-btn" data-act="call" data-fn="logout" title="خروج">✕</button>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+<div class="main-inner">
+
+  <!-- ══ Overview ══ -->
+  <div id="page-overview" class="page active">
+    <div class="topbar">
+      <div class="page-title">نظرة <em>عامة</em></div>
+      <div style="display:flex;gap:0.6rem;align-items:center">
+        <div class="ping-badge" id="pingBadge">— ms</div>
+        <button class="btn btn-ghost btn-sm" data-act="call" data-fn="loadOverview">تحديث</button>
+      </div>
+    </div>
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card" style="grid-column:1/-1"><span class="spinner"></span></div>
+    </div>
+    <div class="card" id="ovAlertsCard" data-owner style="margin-bottom:1.1rem">
+      <div class="card-head">
+        <div class="card-title">التنبيهات</div>
+        <div class="own-row">
+          <span id="alertsUpdated" style="font-size:0.72rem;color:var(--muted)"></span>
+          <button class="btn btn-ghost btn-sm" data-act="own" data-fn="loadAlerts" aria-label="تحديث التنبيهات">تحديث</button>
+        </div>
+      </div>
+      <div id="ovAlerts"><div class="ov-skel"></div></div>
+    </div>
+    <div class="ov-grid">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">الجلسات المباشرة</div>
+          <button class="btn btn-ghost btn-sm" data-act="goto" data-goto="sessions">عرض الكل</button>
+        </div>
+        <div id="ovSessions" class="ov-list"><div class="ov-skel"></div><div class="ov-skel"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">آخر الأحداث</div>
+          <button class="btn btn-ghost btn-sm" data-act="goto" data-goto="activity">عرض الكل</button>
+        </div>
+        <div id="ovActivity" class="log-list"><div class="ov-skel"></div><div class="ov-skel"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">أنشط السيرفرات</div>
+        <button class="btn btn-ghost btn-sm" data-act="goto" data-goto="guilds">عرض الكل</button>
+      </div>
+      <div style="overflow-x:auto">
+      <table class="cards">
+        <thead><tr>
+          <th>السيرفر</th><th>الأعضاء</th><th>اللغة</th>
+          <th>السور</th><th>وقت التلاوة</th><th>الحالة</th>
+        </tr></thead>
+        <tbody id="topGuildsBody">
+          <tr><td colspan="6"><span class="spinner"></span></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Analytics ══ -->
+  <div id="page-analytics" class="page">
+    <div class="topbar">
+      <div class="page-title">الإحصائيات <em>المتقدمة</em></div>
+      <button class="btn btn-ghost btn-sm" data-act="call" data-fn="loadAnalytics">تحديث</button>
+    </div>
+    <div class="stats-row" id="analyticsStats">
+      <div class="stat-card" style="grid-column:1/-1"><span class="spinner"></span></div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">أكثر السور تشغيلاً</div>
+        <div class="chart-wrap"><canvas id="surahChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">توزيع اللغات</div>
+        <div class="chart-wrap"><canvas id="langChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">الجلسات آخر 7 أيام</div>
+        <div class="chart-wrap"><canvas id="sessionsChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">حجم السيرفرات</div>
+        <div class="chart-wrap"><canvas id="memberChart"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">أكثر القرّاء طلباً</div></div>
+      <table>
+        <thead><tr><th>#</th><th>القارئ</th><th>مرات التشغيل</th><th>النسبة</th></tr></thead>
+        <tbody id="recitersBody"><tr><td colspan="4"><span class="spinner"></span></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ Activity Log ══ -->
+  <div id="page-activity" class="page">
+    <div class="topbar">
+      <div class="page-title">سجل <em>النشاط</em></div>
+      <div style="display:flex;gap:0.5rem">
+        <button class="btn btn-ghost btn-sm" data-act="call" data-fn="loadActivity">تحديث</button>
+        <button class="btn btn-danger btn-sm" data-act="call" data-fn="clearActivityLog">مسح</button>
+      </div>
+    </div>
+    <div class="audit-bar">
+      <select class="field" id="auditType">
+        <option value="">كل الأنواع</option><option value="admin">إجراء أدمن</option><option value="join">انضمام</option><option value="leave">مغادرة</option>
+        <option value="play">تشغيل</option><option value="stop">إيقاف</option><option value="ban">حظر</option><option value="error">أخطاء</option>
+      </select>
+      <select class="field" id="auditActor"><option value="">كل المنفّذين</option></select>
+      <input class="field" id="auditText" placeholder="بحث في النص…" style="width:150px">
+      <input class="field" id="auditFrom" type="date" aria-label="من تاريخ" title="من تاريخ">
+      <input class="field" id="auditTo" type="date" aria-label="إلى تاريخ" title="إلى تاريخ">
+      <button class="btn btn-primary btn-sm" data-act="own" data-fn="auditSearch">بحث متقدم</button>
+      <button class="btn btn-ghost btn-sm" data-act="own" data-fn="auditReset">إعادة ضبط</button>
+      <button class="btn btn-ghost btn-sm" data-act="own" data-fn="auditExport">تصدير CSV</button>
+      <button class="btn btn-ghost btn-sm" id="auditMoreBtn" style="display:none" data-act="own" data-fn="auditMore">عرض المزيد</button>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title" id="activityCount">سجل الأحداث</div>
+        <div style="display:flex;gap:0.5rem;align-items:center">
+          <select class="field" id="activityFilter" style="margin:0;width:auto;padding:0.3rem 0.6rem;font-size:0.78rem" data-change="filterActivity">
+            <option value="">كل الأحداث</option>
+            <option value="join">انضمام</option>
+            <option value="leave">مغادرة</option>
+            <option value="play">تشغيل</option>
+            <option value="stop">إيقاف</option>
+            <option value="admin">إجراء أدمن</option>
+            <option value="ban">حظر</option>
+          </select>
+        </div>
+      </div>
+      <div class="log-list" id="activityList">
+        <span class="spinner"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Guilds ══ -->
+  <div id="page-guilds" class="page">
+    <div class="topbar">
+      <div class="page-title">إدارة <em>السيرفرات</em></div>
+      <div class="search-wrap">
+        <input class="field" style="width:240px;margin:0;padding-right:2.2rem;" placeholder="بحث بالاسم أو ID أو وسم   ( / )" id="guildSearch" data-input="filterGuilds" aria-label="بحث في السيرفرات">
+        
+      </div>
+    </div>
+
+    <div class="gf-tiles" id="gfTiles" aria-live="polite"></div>
+
+    <div class="gf-bar">
+      <div class="gf-chips" id="gfChips" role="group" aria-label="فلاتر السيرفرات"></div>
+      <div class="gf-tools">
+        <select class="field" id="guildSize" data-change="filterGuilds" aria-label="حجم السيرفر">
+          <option value="">كل الأحجام</option>
+          <option value="s">أقل من ١٠٠ عضو</option>
+          <option value="m">١٠٠ – ٩٩٩</option>
+          <option value="l">١٬٠٠٠ – ٩٬٩٩٩</option>
+          <option value="xl">١٠٬٠٠٠ فأكثر</option>
+        </select>
+        <select class="field" id="guildSort" data-change="filterGuilds" aria-label="الترتيب">
+          <option value="surahs">ترتيب: السور</option>
+          <option value="members">ترتيب: الأعضاء</option>
+          <option value="playtime">ترتيب: وقت التلاوة</option>
+          <option value="activity">ترتيب: آخر نشاط</option>
+          <option value="joined">ترتيب: تاريخ الانضمام</option>
+          <option value="name">ترتيب: الاسم</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" id="guildRevBtn" aria-pressed="false" data-act="own" data-fn="gfReverse" title="عكس الترتيب">⇅</button>
+        <button class="btn btn-ghost btn-sm" data-act="own" data-fn="gfSaveView" title="احفظ الفلاتر الحالية كعرض">حفظ العرض</button>
+        <button class="btn btn-ghost btn-sm" data-act="own" data-fn="gfClear" id="gfClearBtn" style="display:none">✕ مسح الفلاتر</button>
+      </div>
+    </div>
+    <div class="gf-views" id="gfViews"></div>
+
+    <div class="bulk-bar" id="bulkBar" data-owner>
+      <span class="bulk-count" id="bulkCount">0</span>
+      <div class="bulk-group">
+        <button class="btn btn-ghost btn-sm" data-act="own" data-fn="bulkMessage">رسالة</button>
+        <button class="btn btn-warning btn-sm" data-act="own" data-fn="bulkLock">قفل</button>
+        <button class="btn btn-ghost btn-sm" data-act="own" data-fn="bulkUnlock">فتح</button>
+        <button class="btn btn-ghost btn-sm" data-act="own" data-fn="bulkStop">إيقاف الجلسات</button>
+        <button class="btn btn-ghost btn-sm" data-act="own" data-fn="bulkLanguage">اللغة</button>
+        <button class="btn btn-ghost btn-sm" data-act="own" data-fn="bulkSchedules">إيقاف النشر</button>
+        <button class="btn btn-ghost btn-sm" data-act="own" data-fn="bulkTag">وسم</button>
+        <button class="btn btn-ghost btn-sm" data-act="own" data-fn="bulkExport">تصدير</button>
+      </div>
+      <span class="bulk-sep" aria-hidden="true"></span>
+      <div class="bulk-group">
+        <button class="btn btn-danger btn-sm" data-act="own" data-fn="bulkLeave">مغادرة</button>
+        <button class="btn btn-danger btn-sm" data-act="own" data-fn="bulkBlacklist">حظر</button>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="margin-right:auto" data-act="own" data-fn="bulkClear">إلغاء التحديد</button>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title" id="guildsCount">السيرفرات</div>
+        <div class="card-actions">
+          <button class="btn btn-ghost btn-sm" data-act="call" data-fn="exportGuildsCsv" title="تصدير القائمة الظاهرة إلى ملف CSV">تصدير CSV</button>
+          <button class="btn btn-ghost btn-sm" data-act="call" data-fn="loadGuilds">تحديث</button>
+          <button class="btn btn-danger btn-sm" data-owner data-act="call" data-fn="confirmResetAllStats">إعادة ضبط الكل</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="cards gtable">
+          <thead><tr>
+            <th style="width:2rem" data-owner><input type="checkbox" class="sel" id="selAllGuilds" data-act="own" data-fn="selAllGuilds" aria-label="تحديد الكل"></th>
+            <th>السيرفر</th><th>الأعضاء</th><th>الحالة</th>
+            <th>السور</th><th>وقت التلاوة</th><th>اللغة</th><th>إجراءات</th>
+          </tr></thead>
+          <tbody id="guildsBody">
+            <tr><td colspan="8"><span class="spinner"></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="gf-more" id="gfMore" style="display:none">
+        <button class="btn btn-ghost btn-sm" data-act="own" data-fn="gfMore" id="gfMoreBtn">عرض المزيد</button>
+        <button class="btn btn-ghost btn-sm" data-act="own" data-fn="gfAll">عرض الكل</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Sessions ══ -->
+  <div id="page-sessions" class="page">
+    <div class="topbar">
+      <div class="page-title">الجلسات <em>النشطة</em></div>
+      <div style="display:flex;gap:0.5rem;align-items:center">
+        <span id="sessionCount" style="font-size:0.82rem;color:var(--muted)"></span>
+        <button class="btn btn-ghost btn-sm" data-act="call" data-fn="loadSessions">تحديث</button>
+        <button class="btn btn-danger btn-sm" data-act="call" data-fn="stopAllSessions">إيقاف الكل</button>
+      </div>
+    </div>
+    <div class="session-grid" id="sessionsGrid">
+      <span class="spinner" style="grid-column:1/-1"></span>
+    </div>
+  </div>
+
+
+  <!-- ══ System monitor ══ -->
+  <div id="page-system" class="page">
+    <div class="topbar">
+      <div class="page-title">مراقبة <em>النظام</em></div>
+      <div class="own-row">
+        <span id="sysUpdated" style="font-size:0.75rem;color:var(--muted)"></span>
+        <button class="btn btn-ghost btn-sm" data-act="own" data-fn="loadSystem">تحديث</button>
+      </div>
+    </div>
+    <div class="stats-row" id="sysCards"><div class="stat-card" style="grid-column:1/-1"><span class="spinner"></span></div></div>
+    <div class="own-grid2">
+      <div class="chart-card"><div class="chart-title">المعالج % والذاكرة (MB) — آخر ساعة</div><div class="chart-wrap"><canvas id="sysChartRes"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">زمن الاستجابة (ms): Discord ping · تأخر الحلقة</div><div class="chart-wrap"><canvas id="sysChartLat"></canvas></div></div>
+    </div>
+    <div class="chart-card" style="margin-bottom:1.2rem">
+      <div class="chart-title">نمو السيرفرات — انضمام / مغادرة يوميًا (آخر ٣٠ يومًا)</div>
+      <div class="chart-wrap"><canvas id="growthChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ══ Logs ══ -->
+  <div id="page-logs" class="page">
+    <div class="topbar">
+      <div class="page-title">سجلات <em>البوت</em></div>
+      <div class="own-row">
+        <select class="field" id="logFile" data-change="loadLogs"></select>
+        <select class="field" id="logLevel" data-change="loadLogs">
+          <option value="">كل المستويات</option><option value="ERROR">ERROR</option><option value="WARN">WARN</option>
+          <option value="INFO">INFO</option><option value="SUCCESS">SUCCESS</option><option value="DEBUG">DEBUG</option>
+        </select>
+        <select class="field" id="logLimit" data-change="loadLogs">
+          <option value="100">١٠٠ سطر</option><option value="200" selected>٢٠٠ سطر</option><option value="500">٥٠٠ سطر</option>
+        </select>
+        <input class="field" id="logQuery" placeholder="بحث في السجل…" style="width:160px" data-input="loadLogsDebounced">
+        <button class="btn btn-ghost btn-sm" id="logAutoBtn" aria-pressed="false" data-act="own" data-fn="toggleLogAuto">تحديث تلقائي</button>
+        <button class="btn btn-ghost btn-sm" data-act="own" data-fn="downloadLogs">تنزيل</button>
+        <button class="btn btn-ghost btn-sm" data-act="call" data-fn="loadLogs">تحديث</button>
+      </div>
+    </div>
+    <div class="logbox" id="logBox"><div class="empty">…</div></div>
+    <div style="font-size:0.72rem;color:var(--muted);margin-top:0.5rem">يُحجب أي توكن أو كلمة سر تظهر في السطر قبل إرساله للمتصفح. تُعرض آخر ٥١٢ كيلوبايت فقط من الملف.</div>
+  </div>
+
+  <!-- ══ Server health ══ -->
+  <div id="page-health" class="page">
+    <div class="topbar">
+      <div class="page-title">صحة <em>السيرفرات</em></div>
+      <div class="own-row">
+        <select class="field" id="healthFilter" data-change="healthRender">
+          <option value="">كل المشاكل</option><option value="critical">الحرجة فقط</option><option value="warn">التحذيرات فقط</option>
+        </select>
+        <span id="healthUpdated" style="font-size:0.75rem;color:var(--muted)"></span>
+        <button class="btn btn-primary btn-sm" data-act="own" data-fn="loadHealth">فحص الآن</button>
+      </div>
+    </div>
+    <div class="stats-row" id="healthCards"><div class="stat-card" style="grid-column:1/-1"><span class="spinner"></span></div></div>
+    <div class="card">
+      <div class="card-head"><div class="card-title" id="healthTitle">السيرفرات التي فيها مشاكل</div></div>
+      <div style="font-size:0.78rem;color:var(--muted);padding:0 1rem 0.8rem">
+        يفحص كل سيرفر: قنوات الأذكار وآية اليوم وحديث اليوم (محذوفة؟ بلا صلاحية؟)، وجود قناة يكتب فيها البوت، وقنوات صوتية يستطيع دخولها. الفحص للعرض فقط.
+      </div>
+      <div style="overflow-x:auto">
+        <table class="cards">
+          <thead><tr><th>السيرفر</th><th>الأعضاء</th><th>المشاكل</th><th>إجراءات</th></tr></thead>
+          <tbody id="healthBody"><tr><td colspan="4"><span class="spinner"></span></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Cleanup ══ -->
+  <div id="page-cleanup" class="page">
+    <div class="topbar">
+      <div class="page-title">تنظيف <em>السيرفرات</em></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title" id="cleanTitle">سيرفرات يبدو أنها مهجورة</div>
+        <div class="card-actions own-row">
+          <label style="font-size:0.78rem;color:var(--muted)">بلا نشاط منذ</label>
+          <select class="field" id="cleanDays">
+            <option value="14">١٤ يومًا</option><option value="30" selected>٣٠ يومًا</option><option value="60">٦٠ يومًا</option><option value="90">٩٠ يومًا</option>
+          </select>
+          <label style="font-size:0.78rem;color:var(--muted)">أعضاء ≤</label>
+          <select class="field" id="cleanMax">
+            <option value="10">١٠</option><option value="50">٥٠</option><option value="200">٢٠٠</option><option value="1000">١٠٠٠</option><option value="10000000" selected>بلا حد</option>
+          </select>
+          <button class="btn btn-primary btn-sm" data-act="own" data-fn="scanCleanup">فحص</button>
+        </div>
+      </div>
+      <div style="font-size:0.78rem;color:var(--muted);padding:0 1rem 0.8rem">
+        لا تُعرض السيرفرات التي تعمل فيها جلسة الآن، ولا التي انضم لها البوت خلال المدة المحددة. الفحص للعرض فقط — لا يغادر شيئًا حتى تحدد وتؤكد.
+      </div>
+      <div style="overflow-x:auto">
+        <table class="cards">
+          <thead><tr>
+            <th style="width:2rem"><input type="checkbox" class="sel" id="selAllClean" data-act="own" data-fn="selAllClean" aria-label="تحديد الكل"></th>
+            <th>السيرفر</th><th>الأعضاء</th><th>انضم</th><th>آخر نشاط</th><th>تلاوة؟</th>
+          </tr></thead>
+          <tbody id="cleanBody"><tr><td colspan="6" class="empty">اختر المعايير ثم اضغط «فحص».</td></tr></tbody>
+        </table>
+      </div>
+      <div class="own-row" style="padding:0.9rem 1rem">
+        <button class="btn btn-danger btn-sm" id="cleanLeaveBtn" disabled data-act="own" data-fn="cleanLeave">مغادرة المحدد</button>
+        <span id="cleanSelCount" style="font-size:0.8rem;color:var(--muted)"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Remote play ══ -->
+  <div id="page-remote" class="page">
+    <div class="topbar">
+      <div class="page-title">تشغيل <em>عن بعد</em></div>
+    </div>
+    <div class="card" style="max-width:640px">
+      <div class="adv-body" style="padding:1.1rem">
+        <label>1) السيرفر</label>
+        <input class="field" id="remGuildQ" placeholder="ابحث باسم السيرفر أو الـ ID…" data-input="remoteFilter" autocomplete="off">
+        <select class="field" id="remGuild" data-change="remoteGuildChanged" size="1"></select>
+        <div id="remStatus" style="font-size:0.8rem;color:var(--muted)"></div>
+
+        <label>2) القناة الصوتية</label>
+        <select class="field" id="remVc"><option value="">اختر السيرفر أولاً</option></select>
+        <label class="adv-check"><input type="checkbox" class="sel" id="remMove"> انقل البوت إلى هذه القناة إن كان في قناة أخرى (يوقف جلسته الحالية)</label>
+
+        <label>3) السورة</label>
+        <select class="field" id="remSurah"></select>
+        <label>القارئ (اختياري — الافتراضي قارئ السيرفر)</label>
+        <input class="field" id="remReciter" list="remReciterList" placeholder="ابدأ الكتابة للبحث…" autocomplete="off">
+        <datalist id="remReciterList"></datalist>
+
+        <div class="adv-row">
+          <button class="btn btn-ghost" data-act="own" data-fn="remJoin">دخول فقط</button>
+          <button class="btn btn-primary" data-act="own" data-fn="remPlay">دخول وتشغيل</button>
+        </div>
+        <div style="font-size:0.74rem;color:var(--muted)">القنوات المعطّلة في القائمة لا يملك البوت فيها صلاحية الدخول أو التحدث. يعمل فقط في السيرفرات التي البوت موجود فيها.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Blacklist ══ -->
+  <div id="page-blacklist" class="page">
+    <div class="topbar">
+      <div class="page-title">القائمة <em>السوداء</em></div>
+    </div>
+    <div class="card" style="margin-bottom:1.1rem">
+      <div class="card-head"><div class="card-title">حظر سيرفر</div></div>
+      <div style="padding:1.2rem">
+        <div class="ctrl-desc" style="margin-bottom:0.8rem">
+          أدخل ID السيرفر وسبب الحظر. لن يتمكن البوت من العمل في السيرفرات المحظورة وسيغادر فوراً.
+        </div>
+        <div class="bl-form">
+          <input class="field" id="blGuildId" placeholder="Guild ID (مثال: 123456789012345678)">
+          <input class="field" id="blReason" placeholder="سبب الحظر">
+          <button class="btn btn-danger" data-act="call" data-fn="addToBlacklist" id="blBtn">حظر</button>
+        </div>
+        <div id="blGuildPreview" style="display:none" class="broadcast-preview">
+          <span class="bcast-tag">معلومات السيرفر</span>
+          <div id="blPreviewContent"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title" id="blCount">القائمة السوداء</div>
+        <button class="btn btn-ghost btn-sm" data-act="call" data-fn="loadBlacklist">تحديث</button>
+      </div>
+      <table>
+        <thead><tr><th>السيرفر / ID</th><th>السبب</th><th>التاريخ</th><th>إجراء</th></tr></thead>
+        <tbody id="blBody"><tr><td colspan="4"><span class="spinner"></span></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ Broadcast ══ -->
+  <div id="page-broadcast" class="page">
+    <div class="topbar">
+      <div class="page-title">الإعلانات <em>العامة</em></div>
+    </div>
+    <div class="ctrl-grid">
+      <div class="ctrl-card" style="grid-column:1/-1">
+        <div class="ctrl-title">إرسال إعلان لجميع السيرفرات</div>
+        <div class="ctrl-desc">يُرسَل الإعلان كرسالة Embed في أول قناة يملك فيها البوت صلاحية الإرسال.</div>
+        <div>
+          <label style="font-size:0.78rem;color:var(--muted);margin-bottom:0.35rem;display:block">عنوان الإعلان</label>
+          <input class="field" id="bcastTitle" placeholder="مثال: تحديث جديد">
+          <label style="font-size:0.78rem;color:var(--muted);margin-bottom:0.35rem;display:block">نص الإعلان</label>
+          <textarea class="field" id="bcastMsg" placeholder="اكتب رسالتك هنا..." rows="4" data-input="updateBcastPreview,updateCharCount"></textarea>
+          <div class="char-counter" id="charCounter">0 / 2000</div>
+          <label style="font-size:0.78rem;color:var(--muted);margin-bottom:0.35rem;display:block">نوع الإعلان</label>
+          <div class="announce-targets" id="bcastType">
+            <button class="target-btn selected" data-type="info" data-act="bcastType">معلومات</button>
+            <button class="target-btn" data-type="success" data-act="bcastType">تحديث</button>
+            <button class="target-btn" data-type="warning" data-act="bcastType">تحذير</button>
+            <button class="target-btn" data-type="maintenance" data-act="bcastType">صيانة</button>
+          </div>
+          <div class="broadcast-preview" id="bcastPreview">
+            <span class="bcast-tag">معاينة</span>
+            <div id="bcastPreviewText" style="color:var(--muted);font-style:italic">اكتب رسالة لرؤية المعاينة...</div>
+          </div>
+          <div style="display:flex;gap:0.7rem;margin-top:1rem;align-items:center">
+            <button class="btn btn-primary" data-act="call" data-fn="sendBroadcast" id="bcastBtn">
+              إرسال للكل
+            </button>
+            <button class="btn btn-warning" data-act="call" data-fn="testBroadcast" id="bcastTestBtn">
+              اختبار (سيرفر واحد)
+            </button>
+            <span id="bcastStatus" style="font-size:0.78rem;color:var(--muted)"></span>
+          </div>
+          <div class="sched-row">
+            <span style="font-size:0.8rem;font-weight:700">جدولة بدل الإرسال الفوري</span>
+            <input class="field" id="schedAt" type="datetime-local" aria-label="موعد الإرسال">
+            <label class="adv-check"><input type="checkbox" class="sel" id="schedSelOnly"> <span id="schedSelLabel">للسيرفرات المحددة فقط (٠)</span></label>
+            <button class="btn btn-warning btn-sm" data-act="own" data-fn="schedBroadcast">جدولة</button>
+          </div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:0.4rem">يُستخدم العنوان والنص والنوع أعلاه. الموعد بتوقيت جهازك. إن كان البوت متوقفًا أكثر من ٣٠ دقيقة وقت الموعد يُوسَم «فات موعده» ولا يُرسل متأخرًا.</div>
+        </div>
+      </div>
+      <div class="ctrl-card">
+        <div class="ctrl-title">سجل الإعلانات السابقة</div>
+        <div id="bcastHistory">
+          <div class="empty">لا توجد إعلانات سابقة</div>
+        </div>
+      </div>
+      <div class="ctrl-card">
+        <div class="ctrl-title">إحصائيات الإرسال</div>
+        <div id="bcastStats">
+          <div class="info-row"><span class="info-label">إجمالي الإعلانات</span><span class="info-val" id="bsTotalSent">—</span></div>
+          <div class="info-row"><span class="info-label">آخر إرسال</span><span class="info-val" id="bsLastSent">—</span></div>
+          <div class="info-row"><span class="info-label">معدل النجاح</span><span class="info-val" id="bsSuccessRate" style="color:var(--green)">—</span></div>
+          <div class="info-row"><span class="info-label">السيرفرات المستهدفة</span><span class="info-val" id="bsTargets">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Lavalink ══ -->
+  <div id="page-lavalink" class="page">
+    <div class="topbar">
+      <div class="page-title">محرك <em>الصوت</em></div>
+      <button class="btn btn-ghost btn-sm" data-act="call" data-fn="loadLavalinkStatus">تحديث</button>
+    </div>
+    <div class="stats-row" id="llStats">
+      <div class="stat-card" style="grid-column:1/-1"><span class="spinner"></span></div>
+    </div>
+    <div class="card" style="margin-bottom:1.1rem">
+      <div class="card-head"><div class="card-title">حالة المحرك</div></div>
+      <div class="nodes-grid" id="llNodes">
+        <span class="spinner"></span>
+      </div>
+    </div>
+    <div class="ctrl-grid">
+      <div class="ctrl-card">
+        <div class="ctrl-title">إعادة الاتصال الصوتي</div>
+        <div class="ctrl-desc">إعادة الانضمام للقنوات الصوتية المنقطعة فقط، ولا تُمَسّ الجلسات السليمة.</div>
+        <button class="btn btn-warning" data-act="call" data-fn="reconnectLavalink" id="llReconnectBtn">إعادة الاتصال</button>
+      </div>
+      <div class="ctrl-card">
+        <div class="ctrl-title">مسح الكاش</div>
+        <div class="ctrl-desc">مسح كاش القرّاء والسور والراديو. تُجلب من جديد عند أول حاجة إليها.</div>
+        <button class="btn btn-ghost" data-act="call" data-fn="clearLavalinkCache" id="llCacheBtn">مسح الكاش</button>
+      </div>
+      <div class="ctrl-card">
+        <div class="ctrl-title">إحصائيات مباشرة</div>
+        <div id="llLiveStats">
+          <div class="info-row"><span class="info-label">المشغّلات</span><span class="info-val" id="llPlayers">—</span></div>
+          <div class="info-row"><span class="info-label">قيد التشغيل</span><span class="info-val" id="llPlaying">—</span></div>
+          <div class="info-row"><span class="info-label">مدة التشغيل</span><span class="info-val" id="llUptime">—</span></div>
+          <div class="info-row"><span class="info-label">الذاكرة المستخدمة</span><span class="info-val" id="llMemory">—</span></div>
+          <div class="info-row"><span class="info-label">حمل المعالج</span><span class="info-val" id="llCpu">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Control ══ -->
+  <div id="page-cc" class="page">
+    <div class="topbar">
+      <div class="page-title">مركز <em>التحكم</em></div>
+      <button class="btn btn-ghost btn-sm" data-act="own" data-fn="ccLoad">تحديث</button>
+    </div>
+    <div id="ccBody"><div class="empty"><span class="spinner"></span></div></div>
+  </div>
+
+  <div id="page-fleet" class="page">
+    <div class="topbar">
+      <div class="page-title">الأسطول و <em>/pull</em></div>
+      <button class="btn btn-ghost btn-sm" data-act="own" data-fn="p5Reload" data-page="fleet">تحديث</button>
+    </div>
+    <div class="adv-row" id="p5-fleet-tabs" style="margin-bottom:1rem"></div>
+    <div id="p5-fleet-body"><div class="empty"><span class="spinner"></span></div></div>
+  </div>
+
+  <div id="page-stations" class="page">
+    <div class="topbar">
+      <div class="page-title">المحطات <em>والقرّاء</em></div>
+      <button class="btn btn-ghost btn-sm" data-act="own" data-fn="p5Reload" data-page="stations">تحديث</button>
+    </div>
+    <div class="adv-row" id="p5-stations-tabs" style="margin-bottom:1rem"></div>
+    <div id="p5-stations-body"><div class="empty"><span class="spinner"></span></div></div>
+  </div>
+
+  <div id="page-content" class="page">
+    <div class="topbar">
+      <div class="page-title">الورد <em>والمناسبات</em></div>
+      <button class="btn btn-ghost btn-sm" data-act="own" data-fn="p5Reload" data-page="content">تحديث</button>
+    </div>
+    <div class="adv-row" id="p5-content-tabs" style="margin-bottom:1rem"></div>
+    <div id="p5-content-body"><div class="empty"><span class="spinner"></span></div></div>
+  </div>
+
+  <div id="page-security" class="page">
+    <div class="topbar">
+      <div class="page-title">الأمان <em>والصلاحيات</em></div>
+      <button class="btn btn-ghost btn-sm" data-act="own" data-fn="p5Reload" data-page="security">تحديث</button>
+    </div>
+    <div class="adv-row" id="p5-security-tabs" style="margin-bottom:1rem"></div>
+    <div id="p5-security-body"><div class="empty"><span class="spinner"></span></div></div>
+  </div>
+
+  <div id="page-control" class="page">
+    <div class="topbar">
+      <div class="page-title">إعدادات <em>البوت</em></div>
+    </div>
+    <div class="ctrl-grid">
+      <div class="ctrl-card">
+        <div class="ctrl-title">أوامر سريعة</div>
+        <div style="display:grid;gap:0.5rem">
+          <button class="btn btn-ghost" data-act="call" data-fn="deployCommands">نشر الأوامر (Deploy)</button>
+          <button class="btn btn-ghost" data-act="call" data-fn="clearCache">مسح كاش البوت</button>
+          <button class="btn btn-ghost" data-act="call" data-fn="syncStats">مزامنة الإحصائيات</button>
+          <button class="btn btn-warning" data-act="call" data-fn="maintenanceMode">وضع الصيانة</button>
+        </div>
+      </div>
+      <div class="ctrl-card">
+        <div class="ctrl-title">حالة ظهور البوت</div>
+        <div class="ctrl-desc">تغيّر النقطة الملونة بجانب البوت دون المساس بنص النشاط.</div>
+        <div class="own-row">
+          <button class="btn btn-ghost btn-sm" data-act="own" data-fn="botStatus" data-status="online">متصل</button>
+          <button class="btn btn-ghost btn-sm" data-act="own" data-fn="botStatus" data-status="idle">خامل</button>
+          <button class="btn btn-ghost btn-sm" data-act="own" data-fn="botStatus" data-status="dnd">مشغول</button>
+          <button class="btn btn-ghost btn-sm" data-act="own" data-fn="botStatus" data-status="invisible">مخفي</button>
+        </div>
+      </div>
+      <div class="ctrl-card">
+        <div class="ctrl-title">تغيير نشاط البوت</div>
+        <div class="ctrl-desc">النص الذي يظهر كـ Status على البوت في Discord.</div>
+        <select class="field" id="activityType">
+          <option value="playing">يلعب</option>
+          <option value="listening" selected>Listening to</option>
+          <option value="watching">Watching</option>
+          <option value="competing">Competing in</option>
+        </select>
+        <input class="field" id="activityInput" placeholder="النص الذي يظهر كـ Status للبوت">
+        <button class="btn btn-primary" data-act="call" data-fn="setActivity" id="activityBtn">تطبيق</button>
+      </div>
+      <div class="ctrl-card">
+        <div class="ctrl-title">إعدادات الإشعارات</div>
+        <div class="toggle-wrap">
+          <span class="toggle-label">إشعارات انضمام السيرفرات</span>
+          <div class="toggle on" id="tgl-join" data-act="toggle" data-key="join-notify"></div>
+        </div>
+        <div class="toggle-wrap">
+          <span class="toggle-label">إشعارات مغادرة السيرفرات</span>
+          <div class="toggle on" id="tgl-leave" data-act="toggle" data-key="leave-notify"></div>
+        </div>
+        <div class="toggle-wrap">
+          <span class="toggle-label">تسجيل أخطاء الصوت</span>
+          <div class="toggle on" id="tgl-llerr" data-act="toggle" data-key="ll-errors"></div>
+        </div>
+        <div class="toggle-wrap">
+          <span class="toggle-label">التحديث التلقائي للإحصائيات</span>
+          <div class="toggle" id="tgl-autostats" data-act="toggle" data-key="auto-stats"></div>
+        </div>
+      </div>
+      <div class="ctrl-card">
+        <div class="ctrl-title">معلومات النظام</div>
+        <div id="sysInfo"><span class="spinner"></span></div>
+      </div>
+    </div>
+    <div class="danger-zone ctrl-card" style="margin-top:0.5rem">
+      <div class="ctrl-title">منطقة الخطر</div>
+      <div class="ctrl-desc">هذه الإجراءات لا يمكن التراجع عنها. تأكد جيداً قبل المتابعة.</div>
+      <div style="display:grid;gap:0.5rem">
+        <button class="btn btn-danger" data-act="call" data-fn="confirmResetAllStats">إعادة ضبط كل الإحصائيات</button>
+        <button class="btn btn-danger" data-act="call" data-fn="confirmClearAllBlacklist">مسح القائمة السوداء بالكامل</button>
+        <button class="btn btn-danger" data-act="call" data-fn="confirmRestartBot">إعادة تشغيل البوت</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main-inner -->
+</div><!-- /main -->
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmSub">
+    <div class="modal-icon" id="confirmIcon"></div>
+    <div class="modal-title" id="confirmTitle"></div>
+    <div class="modal-sub"   id="confirmSub"></div>
+    <div id="confirmTypeWrap" style="display:none;margin-bottom:1rem">
+      <div class="modal-sub" id="confirmTypeHint" style="margin-bottom:0.5rem"></div>
+      <input class="field" id="confirmTypeInput" autocomplete="off" aria-label="اكتب كلمة التأكيد">
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" data-act="call" data-fn="closeModal">إلغاء</button>
+      <button class="btn btn-danger" id="confirmOk">تأكيد</button>
+    </div>
+  </div>
+</div>
+
+<!-- Input Modal (volume, message to a server…) -->
+<div class="modal-overlay" id="inputModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="inputTitle">
+    <div class="modal-icon" id="inputIcon"></div>
+    <div class="modal-title" id="inputTitle"></div>
+    <div class="modal-sub"   id="inputSub"></div>
+    <div style="margin-bottom:1rem">
+      <input class="field" id="inputOne" autocomplete="off" inputmode="numeric" style="display:none">
+      <textarea class="field" id="inputMany" rows="4" maxlength="1500" style="display:none"></textarea>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" data-act="call" data-fn="closeInputModal">إلغاء</button>
+      <button class="btn btn-primary" id="inputOk">تأكيد</button>
+    </div>
+  </div>
+</div>
+
+<!-- Guild drawer (side panel with tabs) -->
+<div class="drawer-overlay" id="guildModal">
+  <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="gModalName">
+    <header class="dr-head">
+      <div id="gModalIcon" class="dr-icon"></div>
+      <div class="dr-title">
+        <div id="gModalName" class="dr-name"></div>
+        <button class="dr-id" data-act="own" data-fn="copyGuildId" title="نسخ المعرّف"><span id="gModalId"></span> ⧉</button>
+      </div>
+      <div class="dr-nav">
+        <button class="btn btn-ghost btn-sm" data-act="own" data-fn="drawerPrev" title="السيرفر السابق (→)" aria-label="السابق">›</button>
+        <button class="btn btn-ghost btn-sm" data-act="own" data-fn="drawerNext" title="السيرفر التالي (←)" aria-label="التالي">‹</button>
+        <button class="btn btn-ghost btn-sm" data-act="call" data-fn="closeGuildModal" title="إغلاق (Esc)" aria-label="إغلاق" id="gModalClose">✕</button>
+      </div>
+    </header>
+    <div class="dr-badges" id="gModalBadges"></div>
+    <div class="dr-quick" id="gModalQuick"></div>
+    <nav class="dr-tabs" id="gTabs" role="tablist">
+      <button role="tab" class="active" data-act="own" data-fn="drawerTab" data-tab="overview">نظرة عامة</button>
+      <button role="tab" data-act="own" data-fn="drawerTab" data-tab="voice">الصوت</button>
+      <button role="tab" data-act="own" data-fn="drawerTab" data-tab="settings">الإعدادات</button>
+      <button role="tab" data-owner data-act="own" data-fn="drawerTab" data-tab="restrict">القيود</button>
+      <button role="tab" data-owner data-act="own" data-fn="drawerTab" data-tab="notes">ملاحظات</button>
+      <button role="tab" data-act="own" data-fn="drawerTab" data-tab="actions">إجراءات</button>
+    </nav>
+    <div class="dr-body">
+      <section class="dr-pane active" id="gPane-overview">
+        <div class="guild-detail-grid" id="gModalStats"></div>
+        <div id="gModalDeep"></div>
+      </section>
+      <section class="dr-pane" id="gPane-voice"></section>
+      <section class="dr-pane" id="gPane-settings"></section>
+      <section class="dr-pane" id="gPane-restrict" data-owner></section>
+      <section class="dr-pane" id="gPane-notes" data-owner></section>
+      <section class="dr-pane" id="gPane-actions"><div id="gModalActions"></div></section>
+    </div>
+  </aside>
+</div>
+
+<!-- Choice modal (lock duration, language …) -->
+<div class="modal-overlay" id="pickModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pickTitle">
+    <div class="modal-icon" id="pickIcon"></div>
+    <div class="modal-title" id="pickTitle"></div>
+    <div class="modal-sub"   id="pickSub"></div>
+    <div style="margin-bottom:1rem">
+      <select class="field" id="pickSel" aria-label="اختر"></select>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" data-act="own" data-fn="pickClose">إلغاء</button>
+      <button class="btn btn-primary" id="pickOk">متابعة</button>
+    </div>
+  </div>
+</div>
+
+<!-- Quick search (Ctrl+K) -->
+<div class="modal-overlay" id="cmdk">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="بحث سريع">
+    <input class="field" id="cmdkInput" placeholder="ابحث عن صفحة أو سيرفر… (Esc للإغلاق)" autocomplete="off" aria-label="بحث سريع" style="margin:0">
+    <div id="cmdkList" role="listbox"></div>
+  </div>
+</div>
+
+<!-- Keyboard shortcuts ( ? ) -->
+<div class="modal-overlay" id="shortcuts">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="scTitle">
+    <h3 id="scTitle">اختصارات لوحة المفاتيح</h3>
+    <div class="sc-list">
+      <div class="sc-item"><span>بحث سريع عن صفحة أو سيرفر</span><kbd>Ctrl + K</kbd></div>
+      <div class="sc-item"><span>التركيز على بحث السيرفرات</span><kbd>/</kbd></div>
+      <div class="sc-item"><span>السيرفر التالي / السابق (والنافذة الجانبية مفتوحة)</span><kbd>← →</kbd></div>
+      <div class="sc-item"><span>تحديد نطاق من السيرفرات</span><kbd>Shift + نقر</kbd></div>
+      <div class="sc-item"><span>إغلاق أعلى نافذة</span><kbd>Esc</kbd></div>
+      <div class="sc-item"><span>هذه القائمة</span><kbd>?</kbd></div>
+    </div>
+    <div style="display:flex;justify-content:flex-start;margin-top:0.9rem"><button class="btn btn-ghost" id="shortcutsClose">إغلاق</button></div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="/admin/app.js"></script>
+<script src="/admin/owner.js"></script>
+<script src="/admin/control.js"></script>
+<script src="/admin/phase5.js"></script>
+</body>
+</html>
